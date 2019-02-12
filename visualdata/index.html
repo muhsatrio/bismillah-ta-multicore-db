@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Visualisasi Data</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="lib/vis.min.js"></script>
+    <link rel="stylesheet" href="lib/vis.min.css">
+</head>
+<body>
+    <div id="visualization"></div>
+    <script type="text/javascript">
+    var container = document.getElementById('visualization');
+    var items = [
+        {x: '2014-06-11', y: 10},
+        {x: '2014-06-12', y: 25},
+        {x: '2014-06-13', y: 30},
+        {x: '2014-06-14', y: 10},
+        {x: '2014-06-15', y: 15},
+        {x: '2014-06-16', y: 30}
+    ];
+    var dataset = new vis.DataSet(items);
+    var graph2d = new vis.Graph2d(container, dataset);
+</script>
+</body>
+</html>
