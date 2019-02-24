@@ -1,1 +1,0 @@
-# bismillah-ta-multicore-db
