@@ -19,5 +19,6 @@ void point_insert(point interest_point, int id, int total_point);
 point point_rand_generate(double bound);
 void point_generate(int num_point);
 void point_init(int point);
+point point_get(int interest_point, int id);
 
 #endif

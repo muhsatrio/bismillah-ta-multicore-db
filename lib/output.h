@@ -13,7 +13,7 @@
 using namespace std;
 
 void output_init();
-void output_insert(int interest_point, double time_point, double time_total);
+void output_insert(int interest_point, double time_point, double time_perpendicular_bisector, double time_total);
 
 
 #endif 

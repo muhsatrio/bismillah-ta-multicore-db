@@ -85,3 +85,39 @@ void point_init(int point) {
         }
     }
 }
+
+point point_get(int interest_point, int id) {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank==0) {
+        point point_result;
+        try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            sql::Statement *stat;
+            sql::ResultSet *res;
+
+            driver = get_driver_instance();
+            con = driver->connect("localhost", "root", "");
+            con->setSchema("bismillah_ta");
+
+            stat = con->createStatement();
+            res = stat->executeQuery("SELECT * FROM point_" + to_string(interest_point) + " WHERE id=" + to_string(id));
+            while (res->next()) {
+                point_result.x = res->getDouble("x");
+                point_result.y = res->getDouble("y");
+            }   
+            delete con;
+            delete stat;
+            delete res;
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
+        return point_result;
+    }
+}

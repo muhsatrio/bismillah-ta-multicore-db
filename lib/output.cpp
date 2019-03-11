@@ -29,7 +29,7 @@ void output_init() {
     }
 }
 
-void output_insert(int interest_point, double time_point, double time_total) {
+void output_insert(int interest_point, double time_point, double time_perpendicular_bisector, double time_total) {
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank==0) {
@@ -44,15 +44,17 @@ void output_insert(int interest_point, double time_point, double time_total) {
             con = driver->connect("localhost", "root", "");
             con->setSchema("bismillah_ta");
             stat = con->createStatement();
-            prep = con->prepareStatement("INSERT INTO result(interest_point, time_point, time_total) VALUES(?, ?, ?)");
+            prep = con->prepareStatement("INSERT INTO result(interest_point, time_point, time_perpendicular_bisector, time_total) VALUES(?, ?, ?, ?)");
             // prep->setInt(1, id);
             prep->setInt(1, interest_point);
             prep->setDouble(2, time_point);
-            prep->setDouble(3, time_total);
+            prep->setDouble(3, time_perpendicular_bisector);
+            prep->setDouble(4, time_total);
             prep->execute();
             delete prep;
             delete con;
             delete stat;
+            cout << "DONE in interest point: " << interest_point << endl;
             // delete 
         }
         catch(sql::SQLException &e) {
