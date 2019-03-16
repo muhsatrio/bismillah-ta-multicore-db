@@ -1,5 +1,6 @@
 #include "lib/point.h"
 #include "lib/data.h"
+#include "lib/vertex.h"
 #include "lib/perpendicular_bisector.h"
 #include "mpich/mpi.h"
 #include <vector>
@@ -183,13 +184,13 @@ int main(int argc, char *argv[]) {
         // cout << temp.x << ' ' << temp.y << endl;
         // perpendicular_bisector_init(1000);
         point a;
-        a.x = 2;
-        a.y = 7;
+        a.x = 0.3984607530490602;
+        a.y = 44.44593839105441;
         point b;
         b.x = 3;
         b.y = 6;
-        line result = perpendicular_bisector_compute(a, b);
-        cout << result.m << ' ' << result.c << endl;
+        vertex_relation_insert(10, 2, 2);
+        // cout << result << endl;
         // line line_1 = line{5, 2};
         // line line_2 = line{10, 3};
         // point result = int_compute(line_2, line_1);
