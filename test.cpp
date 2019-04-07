@@ -38,7 +38,6 @@ vector<vect> find_region(int i, vector<vect> list_segment, int len_segment) {
                     temp_angle = get_angle(list_segment[i].start.x - list_segment[i].end.x, list_segment[i].start.y - list_segment[i].end.y, list_segment[j].end.x - list_segment[j].start.x, list_segment[j].end.y - list_segment[j].start.y);
                 }
                 else if (is_same_point(list_segment[i].start, list_segment[j].end)) {
-
                 }
                 else if (is_same_point(list_segment[i].start, list_segment[j].end)) {
 
