@@ -1,5 +1,5 @@
-#ifndef VECTOR_H
-#define VECTOR_H
+#ifndef SEGMENT_H
+#define SEGMENT_H
 
 #include "data.h"
 #include "perpendicular_bisector.h"
@@ -15,9 +15,9 @@
 
 using namespace std;
 
-void vector_init(int point);
-void vector_generate(int interest_point, int size_perpendicular_bisector);
-void vector_insert(int interest_points, vect vector_obj);
-vector<vect> vector_create(int interest_point, int id_perpendicular);
+void segment_init(int point);
+void segment_generate(int interest_point, int size_perpendicular_bisector);
+void segment_insert(int interest_points, segment segment_obj);
+vector<segment> segment_create(int interest_point, int id_perpendicular);
 
 #endif

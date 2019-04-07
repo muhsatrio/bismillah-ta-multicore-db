@@ -11,9 +11,9 @@ struct point {
     double y;
 };
 
-struct vect {
-    point start;
-    point end;
+struct segment {
+    point p1;
+    point p2;
     unsigned int from;
 };
 

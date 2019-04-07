@@ -21,25 +21,27 @@ bool is_same_point(point a, point b) {
     return a.x==b.x && a.y==b.y;
 }
 
-bool is_same_segment(vect a, vect b) {
+bool is_same_segment(segment a, segment b) {
     return ((a.start.x==b.start.x && a.start.y==b.start.y) || (a.start.x==b.end.x && a.start.y==b.end.y) || (a.end.x==b.start.x && a.end.y==b.start.y) || (a.end.x==b.end.x && a.end.y==b.end.y));
 }
 
-vector<vect> find_region(int i, vector<vect> list_segment, int len_segment) {
-    vect next_segment=vect{0, 0, 0};
+vector<segment> find_region(int i, vector<segment> list_segment, int len_segment) {
+    segment next_segment=vect{0, 0, 0};
     double maks_angle = 360, temp_angle;
     while (!is_same_segment(list_segment[i], next_segment)) {
         for (int j=0;j<len_segment;j++) {
             if (j!=i && is_same_segment(list_segment[i], list_segment[j])) {
                 if (is_same_point(list_segment[i].start, list_segment[j].start)) {
-                    temp_angle = get_angle(list_segment[i].start.x - list_segment[i].end.x, list_segment[i].start.y - list_segment[i].end.y, list_segment[j].end.x - list_segment[j].start.x, list_segment[j].end.y - list_segment[j].start.y);
+                    temp_angle = get_angle(list_segment[i].end.x - list_segment[i].start.x, list_segment[i].end.y - list_segment[i].start.y, list_segment[j].end.x - list_segment[j].start.x, list_segment[j].end.y - list_segment[j].start.y);
                 }
                 else if (is_same_point(list_segment[i].start, list_segment[j].end)) {
-                    temp_angle = get_angle(list_segment[i].start.x - list_segment[i].end.x, list_segment[i].start.y - list_segment[i].end.y, list_segment[j].end.x - list_segment[j].start.x, list_segment[j].end.y - list_segment[j].start.y);
+                    temp_angle = get_angle(list_segment[i].start.x - list_segment[i].end.x, list_segment[i].start.y - list_segment[i].end.y, list_segment[j].start.x - list_segment[j].end.x, list_segment[j].start.y - list_segment[j].end.y);
+                }
+                else if (is_same_point(list_segment[i].end, list_segment[j].start)) {
+                    temp_angle = get_angle(list_segment[i].start.x - list_segment[i].end.x, list_segment[i].start.y - list_segment[i].end.y, list_segment[j].start.x - list_segment[j].end.x, list_segment[j].start.y - list_segment[j].end.y);
                 }
                 else if (is_same_point(list_segment[i].start, list_segment[j].end)) {
-                }
-                else if (is_same_point(list_segment[i].start, list_segment[j].end)) {
+                    temp_angle = get_angle(list_segment[i].start.x - list_segment[i].end.x, list_segment[i].start.y - list_segment[i].end.y, list_segment[j].start.x - list_segment[j].end.x, list_segment[j].start.y - list_segment[j].end.y);
 
                 } 
                 // if (get_angle(list_segment[j].))
