@@ -10,7 +10,7 @@
 using namespace std;
 
 int main() {
-    int multiplication_value = 10;
+    int multiplication_value = 5;
     int multiplication_times = 1;
     clock_t time_point, time_perpendicular_bisector, time_vertex, time_total, time_vector, start;
     output_init();
