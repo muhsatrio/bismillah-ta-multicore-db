@@ -1,7 +1,6 @@
 #ifndef POINT_H
 #define POINT_H
 
-#include "mpich/mpi.h"
 #include "data.h"
 #include "mysql-cppconn-8/jdbc/mysql_connection.h"
 #include "mysql-cppconn-8/jdbc/mysql_driver.h"

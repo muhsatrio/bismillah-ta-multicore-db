@@ -9,8 +9,8 @@ void point_insert(point interest_point, int id, int total_point) {
             // sql::ResultSet *result;
 
             driver = get_driver_instance();
-            con = driver->connect("localhost", "root", "");
-            con->setSchema("bismillah_ta");
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
             string num_point_string = to_string(total_point);
             string num_id_string = to_string(id);
             stat = con->createStatement();
@@ -45,20 +45,13 @@ point point_rand_generate(double bound) {
 }
 
 void point_generate(int num_point) {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    if (rank==0) {
         for (int i=1;i<=num_point;i++) {
-            point interest_point = point_rand_generate(100);
+            point interest_point = point_rand_generate(bound);
             point_insert(interest_point, i, num_point);
         }
-    }
 }
 
 void point_init(int point) {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    if (rank==0) {
         try {
             sql::Driver *driver;
             sql::Connection *con;
@@ -66,8 +59,8 @@ void point_init(int point) {
             // sql::ResultSet *result;
 
             driver = get_driver_instance();
-            con = driver->connect("localhost", "root", "");
-            con->setSchema("bismillah_ta");
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
 
             stat = con->createStatement();
             stat->execute("CREATE table point_" + to_string(point) + "(id INT NOT NULL AUTO_INCREMENT, x DOUBLE, y DOUBLE, PRIMARY KEY(id))");
@@ -83,13 +76,9 @@ void point_init(int point) {
             cout << " (MySQL error code: " << e.getErrorCode();
             cout << ", SQLState: " << e.getSQLState() << " )" << endl;
         }
-    }
 }
 
 point point_get(int interest_point, int id) {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    if (rank==0) {
         point point_result;
         try {
             sql::Driver *driver;
@@ -98,8 +87,8 @@ point point_get(int interest_point, int id) {
             sql::ResultSet *res;
 
             driver = get_driver_instance();
-            con = driver->connect("localhost", "root", "");
-            con->setSchema("bismillah_ta");
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
 
             stat = con->createStatement();
             res = stat->executeQuery("SELECT * FROM point_" + to_string(interest_point) + " WHERE id=" + to_string(id));
@@ -119,5 +108,4 @@ point point_get(int interest_point, int id) {
             cout << ", SQLState: " << e.getSQLState() << " )" << endl;
         }
         return point_result;
-    }
 }
