@@ -17,8 +17,8 @@ void vertex_init(int point) {
             stat = con->createStatement();
             stat->execute("CREATE table vertex_" + to_string(point) + "(id INT NOT NULL AUTO_INCREMENT, x DOUBLE, y DOUBLE, PRIMARY KEY(id))");
             stat->execute("CREATE INDEX idx_vertex_" + to_string(point) + " ON vertex_" + to_string(point) + "(x, y)");
-            stat->execute("CREATE table relation_vertex_perpendicular_" + to_string(point) + "(id INT NOT NULL AUTO_INCREMENT, id_vertex INT, id_perpendicular INT, PRIMARY KEY(id))");
-            stat->execute("CREATE INDEX idx_relation_vertex_perpendicular_" + to_string(point) + " ON relation_vertex_perpendicular_" + to_string(point) + "(id_vertex, id_perpendicular)");
+            stat->execute("CREATE table relation_vertex_perpendicular_" + to_string(point) + "(id INT NOT NULL AUTO_INCREMENT, id_vertex INT, vertex_x DOUBLE, vertex_y DOUBLE, id_perpendicular INT, PRIMARY KEY(id))");
+            stat->execute("CREATE INDEX idx_relation_vertex_perpendicular_" + to_string(point) + " ON relation_vertex_perpendicular_" + to_string(point) + "(id_vertex, vertex_x, vertex_y, id_perpendicular)");
             delete con;
             delete stat;
             // delete 
@@ -56,6 +56,7 @@ void vertex_generate(int interest_point, int perpendicular_size) {
                 // perpendicular_bisector_get(interest_point, i);
                 line perpendicular_1 = perpendicular_bisector_get(interest_point, i);
                 line perpendicular_2 = perpendicular_bisector_get(interest_point, j);
+                vector<point> vertex_bound = vertex_compute_bound(perpendicular_1);
                 point vertex_gen = vertex_compute(perpendicular_1, perpendicular_2);
                 if ((vertex_gen.x>=0 && vertex_gen.x<=bound) && (vertex_gen.y>=0 && vertex_gen.y<=bound)) {
                     if (vertex_search(interest_point, vertex_gen)==0) {
@@ -67,15 +68,96 @@ void vertex_generate(int interest_point, int perpendicular_size) {
                     vertex_id = vertex_get_id(interest_point, vertex_gen);
                     // }
                     if (vertex_relation_search(interest_point, vertex_id, i)==0) {
-                        vertex_relation_insert(interest_point, vertex_id, i);
+                        vertex_relation_insert(interest_point, vertex_id, vertex_gen.x, vertex_gen.y, i);
                     }
                     if (vertex_relation_search(interest_point, vertex_id, j)==0) {
-                        vertex_relation_insert(interest_point, vertex_id, j);
+                        vertex_relation_insert(interest_point, vertex_id, vertex_gen.x, vertex_gen.y, j);
+                    }
+                }
+                for (int k=0;k<4;k++) {
+                    if ((vertex_bound[k].x>=0 && vertex_bound[k].x<=bound) && (vertex_bound[k].y>=0 && vertex_bound[k].y<=bound)) {
+                        if (vertex_search(interest_point, vertex_bound[k])==0) {
+                            vertex_insert(interest_point, vertex_bound[k]);
+                            // count++;
+                            // vertex_id = count - 1;
+                        }
+                        // else {
+                        vertex_id = vertex_get_id(interest_point, vertex_bound[k]);
+                        // }
+                        if (vertex_relation_search(interest_point, vertex_id, i)==0) {
+                            vertex_relation_insert(interest_point, vertex_id, vertex_bound[k].x, vertex_bound[k].y, i);
+                        }
+                        if (vertex_relation_search(interest_point, vertex_id, -k)==0) {
+                            vertex_relation_insert(interest_point, vertex_id, vertex_bound[k].x, vertex_bound[k].y, -k);
+                        }
+                    }
+                }
+            }
+        }
+        // get vertex bound for perpendicular last index
+        line perpendicular_last = perpendicular_bisector_get(interest_point, perpendicular_size);
+        vector<point> vertex_bound = vertex_compute_bound(perpendicular_last);
+        vertex_bound.push_back(point{0, 0});
+        vertex_bound.push_back(point{0, bound});
+        vertex_bound.push_back(point{bound, 0});
+        vertex_bound.push_back(point{bound, bound});
+        for (int k=0;k<8;k++) {
+            if ((vertex_bound[k].x>=0 && vertex_bound[k].x<=bound) && (vertex_bound[k].y>=0 && vertex_bound[k].y<=bound)) {
+                if (vertex_search(interest_point, vertex_bound[k])==0) {
+                    vertex_insert(interest_point, vertex_bound[k]);
+                    // count++;
+                    // vertex_id = count - 1;
+                }
+                // else {
+                vertex_id = vertex_get_id(interest_point, vertex_bound[k]);
+                // }
+                if (k<4) {
+                    if (vertex_relation_search(interest_point, vertex_id, perpendicular_size)==0) {
+                        vertex_relation_insert(interest_point, vertex_id, vertex_bound[k].x, vertex_bound[k].y, perpendicular_size);
+                    }
+                    if (vertex_relation_search(interest_point, vertex_id, -k)==0) {
+                        vertex_relation_insert(interest_point, vertex_id, vertex_bound[k].x, vertex_bound[k].y, -k);
+                    }
+                }
+                else {
+                    if (vertex_bound[k].x==0) {
+                        if (vertex_relation_search(interest_point, vertex_id, 0)==0) {
+                            vertex_relation_insert(interest_point, vertex_id, vertex_bound[k].x, vertex_bound[k].y, 0);
+                        }
+                    }
+                    else if (vertex_bound[k].x==bound) {
+                        if (vertex_relation_search(interest_point, vertex_id, -1)==0) {
+                            vertex_relation_insert(interest_point, vertex_id, vertex_bound[k].x, vertex_bound[k].y, -1);
+                        }
+                    }
+                    if (vertex_bound[k].y==0) {
+                        if (vertex_relation_search(interest_point, vertex_id, -2)==0) {
+                            vertex_relation_insert(interest_point, vertex_id, vertex_bound[k].x, vertex_bound[k].y, -2);
+                        }
+                    }
+                    else if (vertex_bound[k].y==bound) {
+                        if (vertex_relation_search(interest_point, vertex_id, -3)==0) {
+                            vertex_relation_insert(interest_point, vertex_id, vertex_bound[k].x, vertex_bound[k].y, -3);
+                        }
                     }
                 }
             }
         }
     }
+}
+
+vector<point> vertex_compute_bound(line Line) {
+    vector<point> Points;
+
+    // Vertex in x axis = 0
+    Points.push_back(point{0, Line.c});
+    // Vertex in x axis = bound
+    Points.push_back(point{bound, (Line.m * bound) + Line.c});
+    // Vertex in y axis = 0
+    Points.push_back(point{-Line.c / Line.m, 0});
+    // Vertex in y axis = bound
+    Points.push_back(point{(bound - Line.c) / Line.m, bound});
+    return Points;
 }
 
 void vertex_insert(int interest_points, point vertex_gen) {
@@ -226,7 +308,7 @@ int vertex_relation_search(int interest_point, int id_vertex, int id_perpendicul
     }
 }
 
-void vertex_relation_insert(int interest_point, int id_vertex, int id_perpendicular) {
+void vertex_relation_insert(int interest_point, int id_vertex, double vertex_x, double vertex_y, int id_perpendicular) {
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank==0) {
@@ -243,9 +325,11 @@ void vertex_relation_insert(int interest_point, int id_vertex, int id_perpendicu
             con->setSchema(db_name);
 
             stat = con->createStatement();
-            prep = con->prepareStatement("INSERT INTO relation_vertex_perpendicular_" + to_string(interest_point) + "(id_vertex, id_perpendicular) VALUES(?, ?)");
+            prep = con->prepareStatement("INSERT INTO relation_vertex_perpendicular_" + to_string(interest_point) + "(id_vertex, vertex_x, vertex_y, id_perpendicular) VALUES(?, ?, ?, ?)");
             prep->setInt(1, id_vertex);
-            prep->setInt(2, id_perpendicular);
+            prep->setDouble(2, vertex_x);
+            prep->setDouble(3, vertex_y);
+            prep->setInt(4, id_perpendicular);
             prep->execute();
             delete prep; 
             delete con;

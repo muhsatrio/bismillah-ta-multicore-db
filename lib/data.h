@@ -12,7 +12,7 @@ struct point {
     double y;
 };
 
-struct segment {
+struct vect {
     point start;
     point end;
     unsigned int from;
@@ -28,9 +28,10 @@ const string db_name = "bismillah_ta";
 const string db_user = "root";
 const string db_pass = "";
 const double bound = 100;
+const double PI = 3.14159265;
 
 MPI_Datatype generateStructPoint();
 MPI_Datatype generateStructLine();
-MPI_Datatype generateStructSegment(MPI_Datatype struct_point);
+MPI_Datatype generateStructVect(MPI_Datatype struct_point);
 
 #endif
