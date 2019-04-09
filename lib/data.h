@@ -14,7 +14,7 @@ struct point {
 struct segment {
     point p1;
     point p2;
-    unsigned int from;
+    int from;
 };
 
 struct line {
