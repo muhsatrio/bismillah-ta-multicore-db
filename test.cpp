@@ -1,6 +1,7 @@
 #include "lib/point.h"
 #include "lib/data.h"
 #include "lib/vertex.h"
+#include "lib/segment.h"
 #include "lib/perpendicular_bisector.h"
 #include <vector>
 #include <algorithm>
@@ -75,21 +76,5 @@ vector<segment> find_region(int idx_search, vector<segment> list_segment, int le
 }
 
 int main() {
-    vector<segment> list_segment;
-    point a = point{2, 2};
-    point b = point{3, 3};
-    point e = point{5, 6};
-    point c = point{4, 2};
-    point d = point{3, 1};
-    list_segment.push_back(segment{c, b, 1});
-    list_segment.push_back(segment{b, e, 1});
-    list_segment.push_back(segment{b, a, 1});
-    list_segment.push_back(segment{a, d, 1});
-    list_segment.push_back(segment{d, c, 1});
-    vector<segment> region = find_region(0, list_segment, list_segment.size());
-    for (int i=0;i<region.size();i++) {
-        cout << region[i].p1.x << ' ' << region[i].p1.y << endl;
-        cout << region[i].p2.x << ' ' << region[i].p2.y << endl;
-        cout << "==========\n";
-    }
+    // vector
 }

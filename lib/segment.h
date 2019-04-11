@@ -19,5 +19,6 @@ void segment_init(int point);
 void segment_generate(int interest_point, int size_perpendicular_bisector);
 void segment_insert(int interest_points, segment segment_obj);
 vector<segment> segment_create(int interest_point, int id_perpendicular);
+vector<segment> segment_get(int interest_point, point search_point);
 
 #endif
