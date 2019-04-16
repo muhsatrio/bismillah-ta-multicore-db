@@ -28,9 +28,9 @@ bool is_same_segment(segment a, segment b) {
     return ((a.p1.x==b.p1.x && a.p1.y==b.p1.y) || (a.p1.x==b.p2.x && a.p1.y==b.p2.y) || (a.p2.x==b.p1.x && a.p2.y==b.p1.y) || (a.p2.x==b.p2.x && a.p2.y==b.p2.y));
 }
 
-void insert_region(int interest_point, point p) {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+void insert_region(int interest_point, point p, int rank, int idx_search) {
+    // int rank;
+    // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     try {
             sql::Driver *driver;
             sql::Connection *con;
@@ -43,10 +43,11 @@ void insert_region(int interest_point, point p) {
             con->setSchema(db_name);
             string num_point_string = to_string(interest_point);
             stat = con->createStatement();
-            prep = con->prepareStatement("INSERT INTO region_" + to_string(interest_point) + "(x, y, parallel_rank) VALUES(?, ?, ?)");
+            prep = con->prepareStatement("INSERT INTO region_" + to_string(interest_point) + "(x, y, label_region, parallel_rank) VALUES(?, ?, ?, ?)");
             prep->setDouble(1, p.x);
             prep->setDouble(2, p.y);
-            prep->setInt(3, rank);
+            prep->setInt(3, idx_search);
+            prep->setInt(4, rank);
             prep->execute();
             delete prep;
             delete con;
@@ -62,56 +63,69 @@ void insert_region(int interest_point, point p) {
         }
 }
 
-// vector<segment> find_region(int idx_search, vector<segment> list_segment, int len_segment) {
-//     vector<segment> region;
-//     region.push_back(list_segment[idx_search]);
-//     list_segment[idx_search].from--;
-//     point start_point = list_segment[idx_search].p1;
-//     point begin_point = list_segment[idx_search].p1;
-//     point next_point=list_segment[idx_search].p2;
-//     int idx_min;
-//     bool found = true;
-//     while (!is_same_point(start_point, next_point) && found) {
-//         idx_min = idx_search;
-//         int count = 0;
-//         double min_angle = 180, temp_angle;
-//         for (int i=0;i<len_segment;i++) {
-//             double vector_x1, vector_y1, vector_x2, vector_y2;
-//             if (i!=idx_search && (is_same_point(next_point, list_segment[i].p1) || is_same_point(next_point, list_segment[i].p2)) && list_segment[i].from>0) {
-//                 count++;
-//                 vector_x1 = begin_point.x - next_point.x;
-//                 vector_y1 = begin_point.y - next_point.y;
-//                 if (is_same_point(next_point, list_segment[i].p2)) {
-//                     temp_angle = get_angle(list_segment[i].p1.x - list_segment[i].p2.x, list_segment[i].p1.y - list_segment[i].p2.y, vector_x1, vector_y1);
-//                 }
-//                 else {
-//                     temp_angle = get_angle(list_segment[i].p2.x - list_segment[i].p1.x, list_segment[i].p2.y - list_segment[i].p1.y, vector_x1, vector_y1);
-//                 }
-//                 if ((temp_angle>0 && temp_angle<180) && temp_angle<min_angle) {
-//                     min_angle = temp_angle;
-//                     idx_min = i;
-//                 }
-//             }
-//         }
-//         if (count==0)
-//             found=false;
-//         if (found) {
-//             idx_search = idx_min;
-//             region.push_back(list_segment[idx_search]);
-//             list_segment[idx_search].from--;
-//             if (is_same_point(next_point, list_segment[idx_search].p1)) {
-//                 next_point = list_segment[idx_search].p2;
-//                 begin_point = list_segment[idx_search].p1;
-//             }
-//             else {
-//                 next_point = list_segment[idx_search].p1;
-//                 begin_point = list_segment[idx_search].p2;
-//             }
-//         }
-//         count++;
-//     }
-//     return region;
-// }
+vector<segment> find_region(int interest_point, int idx_search) {
+    int count_ = 0;
+    vector<segment> region;
+    vector<segment> segment_related;
+    segment temp_segment;
+    temp_segment = segment_get_id(interest_point, idx_search);
+    point start_point = temp_segment.p1;
+    point begin_point = temp_segment.p1;
+    point next_point = temp_segment.p2;
+    region.push_back(temp_segment);
+    // region.push_back(start_point);
+    // region.push_back(next_point);
+    int idx_min;
+    bool found = true;
+    while (!is_same_point(start_point, next_point) && found) {
+        idx_min = idx_search;
+        int count = 0;
+        double min_angle = 180, temp_angle;
+        segment_related.clear();
+        segment_related = segment_get_related(interest_point, next_point, idx_search);
+        for (int i=0;i<segment_related.size();i++) {
+            double vector_x1, vector_y1, vector_x2, vector_y2;
+            if (segment_related[i].id!=idx_search && (is_same_point(next_point, segment_related[i].p1) || is_same_point(next_point, segment_related[i].p2)) && segment_related[i].from>0) {
+                vector_x1 = begin_point.x - next_point.x;
+                vector_y1 = begin_point.y - next_point.y;
+                if (is_same_point(next_point, segment_related[i].p2)) {
+                    temp_angle = get_angle(vector_x1, vector_y1, segment_related[i].p1.x - segment_related[i].p2.x, segment_related[i].p1.y - segment_related[i].p2.y);
+                }
+                else {
+                    temp_angle = get_angle(vector_x1, vector_y1, segment_related[i].p2.x - segment_related[i].p1.x, segment_related[i].p2.y - segment_related[i].p1.y);
+                }
+                if (temp_angle>0 && temp_angle<min_angle) {
+                    min_angle = temp_angle;
+                    idx_min = i;
+                    count++;
+                }
+            }
+        }
+        if (count==0)
+            found=false;
+        if (found) {
+            if (is_same_point(next_point, segment_related[idx_min].p1)) {
+                next_point = segment_related[idx_min].p2;
+                begin_point = segment_related[idx_min].p1;
+                // if (!is_same_point(next_point, start_point))
+                //     region.push_back(next_point);
+                    
+            }
+            else {
+                next_point = segment_related[idx_min].p1;
+                begin_point = segment_related[idx_min].p2;
+                // if (!is_same_point(next_point, start_point))
+                //     region.push_back(next_point);
+            }
+            region.push_back(segment_related[idx_min]);
+            idx_search = segment_related[idx_min].id;
+        }
+        else {
+            region.clear();
+        }
+    }
+    return region;
+}
 
 int main(int argc, char *argv[])
 {
@@ -119,27 +133,36 @@ int main(int argc, char *argv[])
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    // if (rank==0) {
-    clock_t start;
-    if (rank==0) {
-        start = clock();
+    int interest_point = 5;
+    int idx_search = rank+1;
+    int label_region = rank+1;
+    int total_segment = segment_size(interest_point);
+    while (idx_search<total_segment) {
+        segment s = segment_get_id(interest_point, idx_search);
+        if (s.from>0) {
+            vector<segment> region = find_region(interest_point, idx_search);
+            if (region.size()>0) {
+                point temp_point;
+                for (int i=0;i<region.size();i++) {
+                    segment_decrement_sisa_koneksi(interest_point, region[i].id);
+                    if (i==0) {
+                        insert_region(interest_point, region[i].p1, rank, idx_search);
+                        temp_point = region[i].p2;
+                    }
+                    else if (is_same_point(region[i].p1, temp_point)) {
+                        insert_region(interest_point, region[i].p1, rank, idx_search);
+                        temp_point = region[i].p2;
+                    }
+                    else {
+                        insert_region(interest_point, region[i].p2, rank, idx_search);
+                        temp_point = region[i].p1;
+                    }
+                }
+            }
+        }
+        idx_search+=size;
     }
-    if (rank!=0) {
-        insert_region(5, point{0, 0});
-    }
-    if (rank==0) {
-        cout << ((double)clock()-start)/CLOCKS_PER_SEC;
-    }
-    // cout << "ok\n";
-    // vector<segment> list_segment = segment_get(5, point{0, 0});
-    // for (int i=0;i<list_segment.size();i++) {
-    //     cout << list_segment[i].p1.x << ' ' << list_segment[i].p1.y << endl;
-    //     cout << list_segment[i].p2.x << ' ' << list_segment[i].p2.y << endl;
-    //     cout << "============\n";
-    // }
-    // }
-
-    // init_table_parallel(5);
-    // cout << rank << endl;
+    // vector<segment> region = find_region(5, rank+size+1);
+    // cout <<"rank "<< rank <<": "<< region.size() << endl;
     MPI_Finalize();
 }

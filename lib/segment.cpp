@@ -12,11 +12,10 @@ void segment_init(int point) {
             con->setSchema(db_name);
 
             stat = con->createStatement();
-            stat->execute("CREATE table segment_" + to_string(point) + "(id INT NOT NULL AUTO_INCREMENT, p1_x DOUBLE, p1_y DOUBLE, p2_x DOUBLE, p2_y DOUBLE, sisa_koneksi INT, PRIMARY KEY(id))");
+            stat->execute("CREATE table segment_" + to_string(point) + "(id INT NOT NULL AUTO_INCREMENT, p1_x DOUBLE, p1_y DOUBLE, p2_x DOUBLE, p2_y DOUBLE, sisa_koneksi INT, connected_p1_p2 BOOLEAN DEFAULT 0, connected_p2_p1 BOOLEAN DEFAULT 0, PRIMARY KEY(id))");
             stat->execute("CREATE INDEX idx_segment_" + to_string(point) + " ON segment_" + to_string(point) + "(p1_x, p1_y, p2_x, p2_y, sisa_koneksi)");
             delete con;
-            delete stat;
-            // delete 
+            delete stat; 
         }
         catch(sql::SQLException &e) {
             cout << "# ERR: SQLException in " << __FILE__;
@@ -37,7 +36,8 @@ void segment_generate(int interest_point, int size_perpendicular_bisector) {
                 else {
                     temp[j].from = 2;
                 }
-                segment_insert(interest_point, temp[j]);
+                if (!(temp[j].p1.x==temp[j].p2.x && temp[j].p1.y==temp[j].p2.y))
+                    segment_insert(interest_point, temp[j]);
             }
         }
 }
@@ -128,7 +128,7 @@ vector<segment> segment_create(int interest_point, int id_perpendicular) {
         return vector_obj;
 }
 
-vector<segment> segment_get(int interest_point, point search_point) {
+vector<segment> segment_get_related(int interest_point, point search_point, int id) {
     vector<segment> segment_result; 
         try {
             sql::Driver *driver;
@@ -141,7 +141,7 @@ vector<segment> segment_get(int interest_point, point search_point) {
             con = driver->connect(db_host, db_user, db_pass);
             con->setSchema(db_name);
 
-            prep = con->prepareStatement("SELECT * FROM segment_" + to_string(interest_point) + " WHERE (p1_x=? AND p1_y=?) OR (p2_x=? AND p2_y=?)");
+            prep = con->prepareStatement("SELECT * FROM segment_" + to_string(interest_point) + " WHERE ((p1_x=? AND p1_y=?) OR (p2_x=? AND p2_y=?))");
             prep->setDouble(1,search_point.x);
             prep->setDouble(2, search_point.y);
             prep->setDouble(3, search_point.x);
@@ -153,6 +153,10 @@ vector<segment> segment_get(int interest_point, point search_point) {
                 temp.p1.y = res->getDouble("p1_y");
                 temp.p2.x = res->getDouble("p2_x");
                 temp.p2.y = res->getDouble("p2_y");
+                temp.from = res->getInt("sisa_koneksi");
+                temp.is_connected_p1_p2 = res->getDouble("connected_p1_p2");
+                temp.is_connected_p2_p1 = res->getDouble("connected_p2_p1");
+                temp.id = res->getInt("id");
                 segment_result.push_back(temp);
             }   
             delete prep;
@@ -167,4 +171,137 @@ vector<segment> segment_get(int interest_point, point search_point) {
             cout << ", SQLState: " << e.getSQLState() << " )" << endl;
         }
         return segment_result;
+}
+
+void segment_decrement_sisa_koneksi(int interest_point, int id) {
+    try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            sql::Statement *stat;
+            sql::PreparedStatement *prep;
+            // sql::ResultSet *result;
+
+            driver = get_driver_instance();
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
+            stat = con->createStatement();
+            prep = con->prepareStatement("UPDATE segment_" + to_string(interest_point) + " SET sisa_koneksi = sisa_koneksi - 1 WHERE id=?");
+            prep->setDouble(1, id);
+            prep->execute();
+            delete prep;
+            delete con;
+            delete stat;
+            // delete 
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
+}
+
+segment segment_get_id(int interest_point, int id) {
+    segment segment_result; 
+        try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            // sql::Statement *stat;
+            sql::ResultSet *res;
+            sql::PreparedStatement *prep;
+
+            driver = get_driver_instance();
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
+
+            prep = con->prepareStatement("SELECT * FROM segment_" + to_string(interest_point) + " WHERE id=?");
+            prep->setDouble(1, id);
+            res = prep->executeQuery();
+            while (res->next()) {
+                segment_result.p1.x = res->getDouble("p1_x");
+                segment_result.p1.y = res->getDouble("p1_y");
+                segment_result.p2.x = res->getDouble("p2_x");
+                segment_result.p2.y = res->getDouble("p2_y");
+                segment_result.from = res->getInt("sisa_koneksi");
+                segment_result.is_connected_p1_p2 = res->getBoolean("connected_p1_p2");
+                segment_result.is_connected_p2_p1 = res->getBoolean("connected_p2_p1");
+                segment_result.id = res->getInt("id");
+            }   
+            delete prep;
+            delete con;
+            delete res;
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
+        return segment_result;
+}
+
+int segment_size_available(int interest_point) {
+    int size_segment; 
+        try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            sql::Statement *stat;
+            sql::ResultSet *res;
+            // sql::PreparedStatement *prep;
+
+            driver = get_driver_instance();
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
+
+            stat = con->createStatement();
+            res = stat->executeQuery("SELECT COUNT(*) AS count_segment FROM segment_" + to_string(interest_point) + " WHERE sisa_koneksi>0");
+            while (res->next()) {
+                size_segment = res->getInt("count_segment");
+            }
+            delete stat;
+            delete con;
+            delete res;
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
+        return size_segment;
+}
+
+int segment_size(int interest_point) {
+    int size_segment; 
+        try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            sql::Statement *stat;
+            sql::ResultSet *res;
+            // sql::PreparedStatement *prep;
+
+            driver = get_driver_instance();
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
+
+            stat = con->createStatement();
+            res = stat->executeQuery("SELECT COUNT(*) AS count_segment FROM segment_" + to_string(interest_point));
+            while (res->next()) {
+                size_segment = res->getInt("count_segment");
+            }
+            delete stat;
+            delete con;
+            delete res;
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
+        return size_segment;
 }

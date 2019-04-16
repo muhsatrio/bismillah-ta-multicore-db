@@ -12,6 +12,7 @@
 #include <string>
 #include <iomanip>
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -19,6 +20,10 @@ void segment_init(int point);
 void segment_generate(int interest_point, int size_perpendicular_bisector);
 void segment_insert(int interest_points, segment segment_obj);
 vector<segment> segment_create(int interest_point, int id_perpendicular);
-vector<segment> segment_get(int interest_point, point search_point);
+vector<segment> segment_get_related(int interest_point, point search_point, int id);
+void segment_decrement_sisa_koneksi(int interest_point, int id);
+segment segment_get_id(int interest_point, int id);
+int segment_size_available(int interest_point);
+int segment_size(int interest_point);
 
 #endif

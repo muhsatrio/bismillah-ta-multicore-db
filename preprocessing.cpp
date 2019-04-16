@@ -6,33 +6,33 @@
 #include "lib/vertex.h"
 #include "lib/segment.h"
 #include <ctime>
+#include <chrono>
 
 using namespace std;
 
 int main() {
     int multiplication_value = 5;
     int multiplication_times = 1;
-    clock_t time_point, time_perpendicular_bisector, time_vertex, time_total, time_segment, start;
     output_init();
     for (int i=1;i<=multiplication_times;i++) {
         point_init(i*multiplication_value);
-        start = clock();
+        auto start_point = chrono::system_clock::now();
         point_generate(i*multiplication_value);
-        time_point = clock() - start;
+        chrono::duration<double> time_point = chrono::system_clock::now() - start_point;
         perpendicular_bisector_init(i*multiplication_value);
-        start = clock();
+        auto start_perpendicular = chrono::system_clock::now();
         int size_perpendicular_bisector = perpendicular_bisector_generate(i*multiplication_value);
-        time_perpendicular_bisector = clock() - start;
+        chrono::duration<double> time_perpendicular_bisector = chrono::system_clock::now() - start_perpendicular;
         vertex_init(i*multiplication_value);
-        start = clock();
+        auto start_vertex = chrono::system_clock::now();
         vertex_generate(i*multiplication_value, size_perpendicular_bisector);
-        time_vertex = clock() - start;
+        chrono::duration<double> time_vertex = chrono::system_clock::now() - start_vertex;
         segment_init(i*multiplication_value);
-        start = clock();
+        auto start_segment = chrono::system_clock::now();
         segment_generate(i*multiplication_value, size_perpendicular_bisector);
-        time_segment = clock() - start;
-        time_total = time_point + time_perpendicular_bisector + time_vertex + time_segment;
-        output_insert(i*multiplication_value, ((double)time_point)/CLOCKS_PER_SEC, ((double)time_perpendicular_bisector)/CLOCKS_PER_SEC, ((double)time_vertex)/CLOCKS_PER_SEC, ((double)time_segment)/CLOCKS_PER_SEC, ((double)time_total)/CLOCKS_PER_SEC);
+        chrono::duration<double> time_segment = chrono::system_clock::now() - start_segment;
+        double time_total = time_point.count() + time_perpendicular_bisector.count() + time_vertex.count() + time_segment.count();
+        output_insert(i*multiplication_value, time_point.count(), time_perpendicular_bisector.count(), time_vertex.count(), time_segment.count(), time_total);
     }   
     // cout << "hello\n";
     // cout << rank << endl;

@@ -15,6 +15,9 @@ struct segment {
     point p1;
     point p2;
     int from;
+    bool is_connected_p1_p2;
+    bool is_connected_p2_p1;
+    int id;
 };
 
 struct line {

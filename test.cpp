@@ -24,57 +24,86 @@ bool is_same_segment(segment a, segment b) {
     return ((a.p1.x==b.p1.x && a.p1.y==b.p1.y) || (a.p1.x==b.p2.x && a.p1.y==b.p2.y) || (a.p2.x==b.p1.x && a.p2.y==b.p1.y) || (a.p2.x==b.p2.x && a.p2.y==b.p2.y));
 }
 
-vector<segment> find_region(int idx_search, vector<segment> list_segment, int len_segment) {
+vector<segment> find_region(int interest_point, int idx_search) {
+    int count_ = 0;
     vector<segment> region;
-    region.push_back(list_segment[idx_search]);
-    list_segment[idx_search].from--;
-    point start_point = list_segment[idx_search].p1;
-    point begin_point = list_segment[idx_search].p1;
-    point next_point=list_segment[idx_search].p2;
+    vector<segment> segment_related;
+    segment temp_segment;
+    temp_segment = segment_get_id(interest_point, idx_search);
+    point start_point = temp_segment.p1;
+    point begin_point = temp_segment.p1;
+    point next_point = temp_segment.p2;
+    region.push_back(temp_segment);
+    // region.push_back(start_point);
+    // region.push_back(next_point);
     int idx_min;
     bool found = true;
     while (!is_same_point(start_point, next_point) && found) {
         idx_min = idx_search;
         int count = 0;
         double min_angle = 180, temp_angle;
-        for (int i=0;i<len_segment;i++) {
+        segment_related.clear();
+        segment_related = segment_get_related(interest_point, next_point, idx_search);
+        for (int i=0;i<segment_related.size();i++) {
             double vector_x1, vector_y1, vector_x2, vector_y2;
-            if (i!=idx_search && (is_same_point(next_point, list_segment[i].p1) || is_same_point(next_point, list_segment[i].p2)) && list_segment[i].from>0) {
-                count++;
+            if (segment_related[i].id!=idx_search && (is_same_point(next_point, segment_related[i].p1) || is_same_point(next_point, segment_related[i].p2)) && segment_related[i].from>0) {
                 vector_x1 = begin_point.x - next_point.x;
                 vector_y1 = begin_point.y - next_point.y;
-                if (is_same_point(next_point, list_segment[i].p2)) {
-                    temp_angle = get_angle(list_segment[i].p1.x - list_segment[i].p2.x, list_segment[i].p1.y - list_segment[i].p2.y, vector_x1, vector_y1);
+                if (is_same_point(next_point, segment_related[i].p2)) {
+                    temp_angle = get_angle(vector_x1, vector_y1, segment_related[i].p1.x - segment_related[i].p2.x, segment_related[i].p1.y - segment_related[i].p2.y);
                 }
                 else {
-                    temp_angle = get_angle(list_segment[i].p2.x - list_segment[i].p1.x, list_segment[i].p2.y - list_segment[i].p1.y, vector_x1, vector_y1);
+                    temp_angle = get_angle(vector_x1, vector_y1, segment_related[i].p2.x - segment_related[i].p1.x, segment_related[i].p2.y - segment_related[i].p1.y);
                 }
-                if ((temp_angle>0 && temp_angle<180) && temp_angle<min_angle) {
+                if (temp_angle>0 && temp_angle<min_angle) {
                     min_angle = temp_angle;
                     idx_min = i;
+                    count++;
                 }
             }
         }
         if (count==0)
             found=false;
         if (found) {
-            idx_search = idx_min;
-            region.push_back(list_segment[idx_search]);
-            list_segment[idx_search].from--;
-            if (is_same_point(next_point, list_segment[idx_search].p1)) {
-                next_point = list_segment[idx_search].p2;
-                begin_point = list_segment[idx_search].p1;
+            if (is_same_point(next_point, segment_related[idx_min].p1)) {
+                next_point = segment_related[idx_min].p2;
+                begin_point = segment_related[idx_min].p1;
+                // if (!is_same_point(next_point, start_point))
+                //     region.push_back(next_point);
+                    
             }
             else {
-                next_point = list_segment[idx_search].p1;
-                begin_point = list_segment[idx_search].p2;
+                next_point = segment_related[idx_min].p1;
+                begin_point = segment_related[idx_min].p2;
+                // if (!is_same_point(next_point, start_point))
+                //     region.push_back(next_point);
             }
+            region.push_back(segment_related[idx_min]);
+            idx_search = segment_related[idx_min].id;
         }
-        count++;
+        else {
+            region.clear();
+        }
     }
     return region;
 }
 
 int main() {
-    // vector
+    vector<segment> region = find_region(5, 25);
+    cout << region.size() << endl;
+    point temp_point;
+    for (int i=0;i<region.size();i++) {
+        if (i==0) {
+            temp_point = region[i].p2;
+            cout << region[i].p1.x << ' ' << region[i].p1.y << endl;
+        }
+        else if (is_same_point(region[i].p1, temp_point)) {
+            cout << region[i].p1.x << ' ' << region[i].p1.y << endl;
+            temp_point = region[i].p2;
+        }
+        else {
+            cout << region[i].p2.x << ' ' << region[i].p2.y << endl;
+            temp_point = region[i].p1;
+        }
+    }
 }
