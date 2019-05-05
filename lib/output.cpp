@@ -11,7 +11,7 @@ void output_init() {
             con = driver->connect("localhost", "root", "");
             con->setSchema("bismillah_ta");
             stat = con->createStatement();
-            stat->execute("CREATE TABLE result(interest_point INT PRIMARY KEY, time_point DOUBLE DEFAULT 0, time_perpendicular_bisector DOUBLE DEFAULT 0, time_vertex DOUBLE DEFAULT 0, time_vector DOUBLE DEFAULT 0, time_influence_zone DOUBLE DEFAULT 0, time_total DOUBLE DEFAULT 0)");
+            stat->execute("CREATE TABLE result(interest_point INT PRIMARY KEY, time_point DOUBLE DEFAULT 0, time_perpendicular_bisector DOUBLE DEFAULT 0, time_vertex DOUBLE DEFAULT 0, time_segment DOUBLE DEFAULT 0, time_total DOUBLE DEFAULT 0)");
             delete con;
             delete stat;
             // delete 
@@ -36,7 +36,7 @@ void output_insert(int interest_point, double time_point, double time_perpendicu
             con = driver->connect(db_host, db_user, db_pass);
             con->setSchema(db_name);
             stat = con->createStatement();
-            prep = con->prepareStatement("INSERT INTO result(interest_point, time_point, time_perpendicular_bisector, time_vertex, time_vector, time_total) VALUES(?, ?, ?, ?, ?, ?)");
+            prep = con->prepareStatement("INSERT INTO result(interest_point, time_point, time_perpendicular_bisector, time_vertex, time_segment, time_total) VALUES(?, ?, ?, ?, ?, ?)");
             prep->setInt(1, interest_point);
             prep->setDouble(2, time_point);
             prep->setDouble(3, time_perpendicular_bisector);

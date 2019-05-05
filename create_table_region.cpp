@@ -63,8 +63,33 @@ void create_table_result() {
         }
 }
 
+void create_table_record(int interest_point) {
+    try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            sql::Statement *stat;
+
+            driver = get_driver_instance();
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
+
+            stat = con->createStatement();
+            stat->execute("CREATE table record_region_" + to_string(interest_point) + "(id INT NOT NULL AUTO_INCREMENT, id_segment INT, id_parallel INT, time_created TIMESTAMP, PRIMARY KEY(id))");
+            delete con;
+            delete stat;
+            // delete 
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
+}
+
 int main() {
     create_table_region(5);
     create_table_result();
-
+    create_table_record(5);
 }

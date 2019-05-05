@@ -10,6 +10,15 @@
 
 using namespace std;
 
+void comparison_double(double a, double b) {
+    if (a>b) {
+        cout << "a lebih besar dari b" << endl;
+    }
+    else if (b>a) {
+        cout << "b lebih besar dari a" << endl; 
+    }
+}
+
 double get_angle(double vector_x1, double vector_y1, double vector_x2, double vector_y2) {
     double dot = (vector_x1 * vector_x2) + (vector_y1 * vector_y2);
     double determinan = (vector_x1 * vector_y2) - (vector_x2 * vector_y1);
@@ -89,21 +98,24 @@ vector<segment> find_region(int interest_point, int idx_search) {
 }
 
 int main() {
-    vector<segment> region = find_region(5, 25);
-    cout << region.size() << endl;
-    point temp_point;
-    for (int i=0;i<region.size();i++) {
-        if (i==0) {
-            temp_point = region[i].p2;
-            cout << region[i].p1.x << ' ' << region[i].p1.y << endl;
-        }
-        else if (is_same_point(region[i].p1, temp_point)) {
-            cout << region[i].p1.x << ' ' << region[i].p1.y << endl;
-            temp_point = region[i].p2;
-        }
-        else {
-            cout << region[i].p2.x << ' ' << region[i].p2.y << endl;
-            temp_point = region[i].p1;
-        }
-    }
+    double a = 5.000000000000001;
+    double b = 5.000000000000001;
+    comparison_double(a,b);
+    // vector<segment> region = find_region(5, 25);
+    // cout << region.size() << endl;
+    // point temp_point;
+    // for (int i=0;i<region.size();i++) {
+    //     if (i==0) {
+    //         temp_point = region[i].p2;
+    //         cout << region[i].p1.x << ' ' << region[i].p1.y << endl;
+    //     }
+    //     else if (is_same_point(region[i].p1, temp_point)) {
+    //         cout << region[i].p1.x << ' ' << region[i].p1.y << endl;
+    //         temp_point = region[i].p2;
+    //     }
+    //     else {
+    //         cout << region[i].p2.x << ' ' << region[i].p2.y << endl;
+    //         temp_point = region[i].p1;
+    //     }
+    // }
 }

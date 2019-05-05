@@ -36,7 +36,13 @@ void segment_generate(int interest_point, int size_perpendicular_bisector) {
                 else {
                     temp[j].from = 2;
                 }
-                if (!(temp[j].p1.x==temp[j].p2.x && temp[j].p1.y==temp[j].p2.y))
+                double diffx = temp[j].p1.x - temp[j].p2.x;
+                double diffy = temp[j].p1.y - temp[j].p2.y;
+                if (diffx<0)
+                    diffx = diffx * (-1);
+                if (diffy<0)
+                    diffy = diffy * (-1);
+                if (diffx>0.009 || diffy>0.009)
                     segment_insert(interest_point, temp[j]);
             }
         }
