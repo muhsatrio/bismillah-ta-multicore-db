@@ -24,6 +24,10 @@ bool is_same_point(point a, point b) {
     return a.x==b.x && a.y==b.y;
 }
 
+bool is_segment_bound(segment s) {
+    return (s.p1.x==0 && s.p2.x==0) || (s.p1.y==0 || s.p2.y==0) || (s.p1.x==bound && s.p2.x==bound) || (s.p1.y==bound || s.p2.y==bound);
+}
+
 bool is_same_segment(segment a, segment b) {
     return ((a.p1.x==b.p1.x && a.p1.y==b.p1.y) || (a.p1.x==b.p2.x && a.p1.y==b.p2.y) || (a.p2.x==b.p1.x && a.p2.y==b.p1.y) || (a.p2.x==b.p2.x && a.p2.y==b.p2.y));
 }
@@ -98,7 +102,7 @@ void insert_record(int interest_point, int id_segment, int id_parallel) {
         }
 }
 
-vector<segment> find_region(int interest_point, int idx_search) {
+vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi) {
     int count_ = 0;
     vector<segment> region;
     vector<segment> segment_related;
@@ -138,23 +142,42 @@ vector<segment> find_region(int interest_point, int idx_search) {
             found=false;
         if (found) {
             segment s = segment_get_id(interest_point, segment_related[idx_min].id);
-            if (s.from>0) {
-                if (is_same_point(next_point, segment_related[idx_min].p1)) {
-                    next_point = segment_related[idx_min].p2;
-                    begin_point = segment_related[idx_min].p1;
-                        
+            if (sisa_koneksi==2) {
+                if (s.from==2 || (s.from==1 && is_segment_bound(s))) {
+                    if (is_same_point(next_point, segment_related[idx_min].p1)) {
+                        next_point = segment_related[idx_min].p2;
+                        begin_point = segment_related[idx_min].p1;
+                            
+                    }
+                    else {
+                        next_point = segment_related[idx_min].p1;
+                        begin_point = segment_related[idx_min].p2;
+                    }
+                    region.push_back(segment_related[idx_min]);
+                    idx_search = segment_related[idx_min].id;
                 }
                 else {
-                    next_point = segment_related[idx_min].p1;
-                    begin_point = segment_related[idx_min].p2;
+                    region.clear();
+                    found = false;
                 }
-                region.push_back(segment_related[idx_min]);
-                idx_search = segment_related[idx_min].id;
             }
-            else {
-                region.clear();
-                found = false;
-            }
+            // if (s.from==2) {
+            //     if (is_same_point(next_point, segment_related[idx_min].p1)) {
+            //         next_point = segment_related[idx_min].p2;
+            //         begin_point = segment_related[idx_min].p1;
+                        
+            //     }
+            //     else {
+            //         next_point = segment_related[idx_min].p1;
+            //         begin_point = segment_related[idx_min].p2;
+            //     }
+            //     region.push_back(segment_related[idx_min]);
+            //     idx_search = segment_related[idx_min].id;
+            // }
+            // else {
+            //     region.clear();
+            //     found = false;
+            // }
         }
         else {
             region.clear();
@@ -173,10 +196,11 @@ int main(int argc, char *argv[])
     int idx_search = rank+1;
     int label_region = rank+1;
     int total_segment = segment_size(interest_point);
+    int sisa_koneksi = 2;
     while (idx_search<total_segment) {
         segment s = segment_get_id(interest_point, idx_search);
-        if (s.from>0) {
-            vector<segment> region = find_region(interest_point, idx_search);
+        if (s.from==2) {
+            vector<segment> region = find_region(interest_point, idx_search, 2);
             if (region.size()>0) {
                 point temp_point;
                 for (int i=0;i<region.size();i++) {

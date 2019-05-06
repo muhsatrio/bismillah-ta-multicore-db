@@ -12,7 +12,7 @@ void segment_init(int point) {
             con->setSchema(db_name);
 
             stat = con->createStatement();
-            stat->execute("CREATE table segment_" + to_string(point) + "(id INT NOT NULL AUTO_INCREMENT, p1_x DOUBLE, p1_y DOUBLE, p2_x DOUBLE, p2_y DOUBLE, sisa_koneksi INT, connected_p1_p2 BOOLEAN DEFAULT 0, connected_p2_p1 BOOLEAN DEFAULT 0, PRIMARY KEY(id))");
+            stat->execute("CREATE table segment_" + to_string(point) + "(id INT NOT NULL AUTO_INCREMENT, p1_x DOUBLE, p1_y DOUBLE, p2_x DOUBLE, p2_y DOUBLE, sisa_koneksi INT, PRIMARY KEY(id))");
             stat->execute("CREATE INDEX idx_segment_" + to_string(point) + " ON segment_" + to_string(point) + "(p1_x, p1_y, p2_x, p2_y, sisa_koneksi)");
             delete con;
             delete stat; 
@@ -42,7 +42,7 @@ void segment_generate(int interest_point, int size_perpendicular_bisector) {
                     diffx = diffx * (-1);
                 if (diffy<0)
                     diffy = diffy * (-1);
-                if (diffx>0.009 || diffy>0.009)
+                if (diffx>0.000009 || diffy>0.000009)
                     segment_insert(interest_point, temp[j]);
             }
         }
@@ -160,8 +160,6 @@ vector<segment> segment_get_related(int interest_point, point search_point, int 
                 temp.p2.x = res->getDouble("p2_x");
                 temp.p2.y = res->getDouble("p2_y");
                 temp.from = res->getInt("sisa_koneksi");
-                temp.is_connected_p1_p2 = res->getDouble("connected_p1_p2");
-                temp.is_connected_p2_p1 = res->getDouble("connected_p2_p1");
                 temp.id = res->getInt("id");
                 segment_result.push_back(temp);
             }   
@@ -230,8 +228,6 @@ segment segment_get_id(int interest_point, int id) {
                 segment_result.p2.x = res->getDouble("p2_x");
                 segment_result.p2.y = res->getDouble("p2_y");
                 segment_result.from = res->getInt("sisa_koneksi");
-                segment_result.is_connected_p1_p2 = res->getBoolean("connected_p1_p2");
-                segment_result.is_connected_p2_p1 = res->getBoolean("connected_p2_p1");
                 segment_result.id = res->getInt("id");
             }   
             delete prep;
