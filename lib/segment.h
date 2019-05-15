@@ -24,6 +24,7 @@ vector<segment> segment_get_related(int interest_point, point search_point, int 
 void segment_decrement_sisa_koneksi(int interest_point, int id);
 segment segment_get_id(int interest_point, int id);
 int segment_size_available(int interest_point);
+int segment_available_sisa_koneksi(int interest_point, int sisa_koneksi);
 int segment_size(int interest_point);
 
 #endif

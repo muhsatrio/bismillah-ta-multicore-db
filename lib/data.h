@@ -25,6 +25,11 @@ struct line {
     double c;
 };
 
+struct list_segment {
+    segment s[50000];
+    int size;
+};
+
 const string db_host = "localhost";
 const string db_name = "bismillah_ta";
 const string db_user = "root";

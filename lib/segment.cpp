@@ -30,20 +30,23 @@ void segment_generate(int interest_point, int size_perpendicular_bisector) {
         for (int i=-3;i<=size_perpendicular_bisector;i++) {
             vector<segment> temp = segment_create(interest_point, i);
             for (int j=0;j<temp.size();j++) {
-                if ((temp[j].p1.x==0 && temp[j].p2.x==0) || (temp[j].p1.y==0 && temp[j].p2.y==0) || (temp[j].p1.x==bound && temp[j].p2.y==bound) || (temp[j].p1.y==bound && temp[j].p2.y==bound)) {
+                if ((temp[j].p1.x==0 && temp[j].p2.x==0) || (temp[j].p1.y==0 && temp[j].p2.y==0) || (temp[j].p1.x==bound && temp[j].p2.x==bound) || (temp[j].p1.y==bound && temp[j].p2.y==bound)) {
                     temp[j].from = 1;
                 }
                 else {
                     temp[j].from = 2;
                 }
-                double diffx = temp[j].p1.x - temp[j].p2.x;
-                double diffy = temp[j].p1.y - temp[j].p2.y;
-                if (diffx<0)
-                    diffx = diffx * (-1);
-                if (diffy<0)
-                    diffy = diffy * (-1);
-                if (diffx>0.000009 || diffy>0.000009)
+                // double diffx = temp[j].p1.x - temp[j].p2.x;
+                // double diffy = temp[j].p1.y - temp[j].p2.y;
+                // if (diffx<0)
+                //     diffx = diffx * (-1);
+                // if (diffy<0)
+                //     diffy = diffy * (-1);
+                // if (diffx>0.000009 || diffy>0.000009)
+                //     segment_insert(interest_point, temp[j]);
+                if (abs(temp[j].p1.x - temp[j].p2.x)>0.000009 || abs(temp[j].p1.y - temp[j].p2.y)>0.000009) {
                     segment_insert(interest_point, temp[j]);
+                }
             }
         }
 }
@@ -263,6 +266,39 @@ int segment_size_available(int interest_point) {
                 size_segment = res->getInt("count_segment");
             }
             delete stat;
+            delete con;
+            delete res;
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
+        return size_segment;
+}
+
+int segment_available_sisa_koneksi(int interest_point, int sisa_koneksi) {
+    int size_segment; 
+        try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            // sql::Statement *stat;
+            sql::ResultSet *res;
+            sql::PreparedStatement *prep;
+
+            driver = get_driver_instance();
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
+
+            prep = con->prepareStatement("SELECT COUNT(*) AS count_segment FROM segment_" + to_string(interest_point) + " WHERE sisa_koneksi=?");
+            prep->setInt(1, sisa_koneksi);
+            res = prep->executeQuery();
+            while (res->next()) {
+                size_segment = res->getInt("count_segment");
+            }
+            delete prep;
             delete con;
             delete res;
         }
