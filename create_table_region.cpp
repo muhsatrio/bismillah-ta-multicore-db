@@ -74,7 +74,7 @@ void create_table_record(int interest_point) {
             con->setSchema(db_name);
 
             stat = con->createStatement();
-            stat->execute("CREATE table record_region_" + to_string(interest_point) + "(id INT NOT NULL AUTO_INCREMENT, id_segment INT, id_parallel INT, time_created TIMESTAMP, PRIMARY KEY(id))");
+            stat->execute("CREATE table record_region_" + to_string(interest_point) + "(id INT NOT NULL AUTO_INCREMENT, id_segment INT, id_parallel INT, segment_size INT, time_created TIMESTAMP, PRIMARY KEY(id))");
             delete con;
             delete stat;
             // delete 

@@ -150,7 +150,8 @@ vector<segment> segment_get_related(int interest_point, point search_point, int 
             con = driver->connect(db_host, db_user, db_pass);
             con->setSchema(db_name);
 
-            prep = con->prepareStatement("SELECT * FROM segment_" + to_string(interest_point) + " WHERE ((p1_x=? AND p1_y=?) OR (p2_x=? AND p2_y=?))");
+            // prep = con->prepareStatement("SELECT * FROM segment_" + to_string(interest_point) + " WHERE ((p1_x=? AND p1_y=?) OR (p2_x=? AND p2_y=?))");
+            prep = con->prepareStatement("SELECT * FROM segment_" + to_string(interest_point) + " WHERE ((ABS(p1_x-?)<0.00001 AND ABS(p1_y - ?) < 0.00001) OR (ABS(p2_x - ?) < 0.00001 AND ABS(p2_y - ?) < 0.00001))");
             prep->setDouble(1,search_point.x);
             prep->setDouble(2, search_point.y);
             prep->setDouble(3, search_point.x);
@@ -165,6 +166,8 @@ vector<segment> segment_get_related(int interest_point, point search_point, int 
                 temp.from = res->getInt("sisa_koneksi");
                 temp.id = res->getInt("id");
                 segment_result.push_back(temp);
+                // segment_result.s[segment_result.size] = temp;
+                // segment_result.size++;
             }   
             delete prep;
             delete con;
