@@ -23,7 +23,7 @@ void create_table_region(int interest_point) {
             con->setSchema(db_name);
 
             stat = con->createStatement();
-            stat->execute("CREATE table region_" + to_string(interest_point) + "(id INT NOT NULL AUTO_INCREMENT, x DOUBLE, y DOUBLE, label_region INT, parallel_rank INT, PRIMARY KEY(id))");
+            stat->execute("CREATE table region_" + to_string(interest_point) + "(id INT NOT NULL AUTO_INCREMENT, x DOUBLE, y DOUBLE, order_val INT, label_region INT, parallel_rank INT, PRIMARY KEY(id))");
             stat->execute("CREATE INDEX region_" + to_string(interest_point) + " ON region_" + to_string(interest_point) + "(id, x, y)");
             delete con;
             delete stat;

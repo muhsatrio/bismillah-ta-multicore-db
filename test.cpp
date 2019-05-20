@@ -280,14 +280,14 @@ vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi
     int idx_min;
     bool found = true;
     while (!is_same_point(start_point, next_point) && found) {
-        // cout <<"dari: "<< next_point.x << ' ' << next_point.y << endl;
+        cout <<"dari: "<< next_point.x << ' ' << next_point.y << endl;
         idx_min = idx_search;
         int count = 0;
         double min_angle = 180, temp_angle;
         segment_related.clear();
         segment_related = segment_get_related(interest_point, next_point, idx_search);
         for (int i=0;i<segment_related.size();i++) {
-            // cout << segment_related[i].p1.x << ' ' << segment_related[i].p1.y << ' ' << segment_related[i].p2.x << ' ' << segment_related[i].p2.y << ' ' << segment_related[i].from << endl;
+            cout << segment_related[i].p1.x << ' ' << segment_related[i].p1.y << ' ' << segment_related[i].p2.x << ' ' << segment_related[i].p2.y << ' ' << segment_related[i].from << endl;
             double vector_x1, vector_y1, vector_x2, vector_y2;
             if (segment_related[i].id!=idx_search && (is_same_point(next_point, segment_related[i].p1) || is_same_point(next_point, segment_related[i].p2))) {
                 vector_x1 = begin_point.x - next_point.x;
@@ -338,7 +338,7 @@ vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi
 }
 
 int main() {
-    // vector<segment> reg = find_region(5, 37, 2);
+    vector<segment> reg = find_region(5, 58, 2);
     // cout << reg.size() << endl;
     // for (int i=1;i<=89;i++) {
     //     // list_segment reg = find_region(5, 44, 2);
@@ -346,44 +346,44 @@ int main() {
     //     cout << "id: " << i << " | size: " << reg.size() << endl;
     // }
 
-    create_table_region(5);
-    create_table_result();
-    create_table_record(5);
+    // create_table_region(5);
+    // create_table_result();
+    // create_table_record(5);
     
-    int interest_point = 5;
-    int idx_search = 1;
-    int total_segment = segment_size(interest_point);
-    int sisa_koneksi = 2;
-    bool search = true;
-    while (segment_available_sisa_koneksi(interest_point,2)>0) {
-        segment s = segment_get_id(interest_point, idx_search);
-        if (s.from==2) {
-            vector<segment> reg = find_region(interest_point, s.id, 2);
-            insert_record(interest_point, s.id, 0, reg.size());
-            if (reg.size()>0) {
-                point temp_point;
-                for (int i=0;i<reg.size();i++) {
-                    segment_decrement_sisa_koneksi(interest_point, reg[i].id);
-                    if (i==0) {
-                        insert_region(interest_point, reg[i].p1, 0, idx_search);
-                        temp_point = reg[i].p2;
-                    }
-                    else if (is_same_point(reg[i].p1, temp_point)) {
-                        insert_region(interest_point, reg[i].p1, 0, idx_search);
-                        temp_point = reg[i].p2;
-                    }
-                    else {
-                        insert_region(interest_point, reg[i].p2, 0, idx_search);
-                        temp_point = reg[i].p1;
-                    }
-                }
-            }
-        }
-        if (idx_search+1>total_segment) {
-            idx_search = 1;
-        }
-        else {
-            idx_search++;
-        }
-    }
+    // int interest_point = 5;
+    // int idx_search = 1;
+    // int total_segment = segment_size(interest_point);
+    // int sisa_koneksi = 2;
+    // bool search = true;
+    // while (segment_available_sisa_koneksi(interest_point,2)>0) {
+    //     segment s = segment_get_id(interest_point, idx_search);
+    //     if (s.from==2) {
+    //         vector<segment> reg = find_region(interest_point, s.id, 2);
+    //         insert_record(interest_point, s.id, 0, reg.size());
+    //         if (reg.size()>0) {
+    //             point temp_point;
+    //             for (int i=0;i<reg.size();i++) {
+    //                 segment_decrement_sisa_koneksi(interest_point, reg[i].id);
+    //                 if (i==0) {
+    //                     insert_region(interest_point, reg[i].p1, 0, idx_search);
+    //                     temp_point = reg[i].p2;
+    //                 }
+    //                 else if (is_same_point(reg[i].p1, temp_point)) {
+    //                     insert_region(interest_point, reg[i].p1, 0, idx_search);
+    //                     temp_point = reg[i].p2;
+    //                 }
+    //                 else {
+    //                     insert_region(interest_point, reg[i].p2, 0, idx_search);
+    //                     temp_point = reg[i].p1;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     if (idx_search+1>total_segment) {
+    //         idx_search = 1;
+    //     }
+    //     else {
+    //         idx_search++;
+    //     }
+    // }
 }

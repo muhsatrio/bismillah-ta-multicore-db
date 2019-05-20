@@ -32,7 +32,7 @@ bool is_same_segment(segment a, segment b) {
     return ((a.p1.x==b.p1.x && a.p1.y==b.p1.y) || (a.p1.x==b.p2.x && a.p1.y==b.p2.y) || (a.p2.x==b.p1.x && a.p2.y==b.p1.y) || (a.p2.x==b.p2.x && a.p2.y==b.p2.y));
 }
 
-void insert_region(int interest_point, point p, int rank, int idx_search) {
+void insert_region(int interest_point, point p, int rank, int idx_search, int order_val) {
     try {
             sql::Driver *driver;
             sql::Connection *con;
@@ -44,11 +44,12 @@ void insert_region(int interest_point, point p, int rank, int idx_search) {
             con->setSchema(db_name);
             string num_point_string = to_string(interest_point);
             stat = con->createStatement();
-            prep = con->prepareStatement("INSERT INTO region_" + to_string(interest_point) + "(x, y, label_region, parallel_rank) VALUES(?, ?, ?, ?)");
+            prep = con->prepareStatement("INSERT INTO region_" + to_string(interest_point) + "(x, y, order_val, label_region, parallel_rank) VALUES(?, ?, ?, ?, ?)");
             prep->setDouble(1, p.x);
             prep->setDouble(2, p.y);
-            prep->setInt(3, idx_search);
-            prep->setInt(4, rank);
+            prep->setInt(3, order_val);
+            prep->setInt(4, idx_search);
+            prep->setInt(5, rank);
             prep->execute();
             delete prep;
             delete con;
@@ -181,15 +182,15 @@ int main(int argc, char *argv[])
                 for (int i=0;i<reg.size();i++) {
                     segment_decrement_sisa_koneksi(interest_point, reg[i].id);
                     if (i==0) {
-                        insert_region(interest_point, reg[i].p1, rank, idx_search);
+                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1);
                         temp_point = reg[i].p2;
                     }
                     else if (is_same_point(reg[i].p1, temp_point)) {
-                        insert_region(interest_point, reg[i].p1, rank, idx_search);
+                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1);
                         temp_point = reg[i].p2;
                     }
                     else {
-                        insert_region(interest_point, reg[i].p2, rank, idx_search);
+                        insert_region(interest_point, reg[i].p2, rank, idx_search, i+1);
                         temp_point = reg[i].p1;
                     }
                 }
@@ -215,15 +216,15 @@ int main(int argc, char *argv[])
                 for (int i=0;i<reg.size();i++) {
                     segment_decrement_sisa_koneksi(interest_point, reg[i].id);
                     if (i==0) {
-                        insert_region(interest_point, reg[i].p1, rank, idx_search);
+                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1);
                         temp_point = reg[i].p2;
                     }
                     else if (is_same_point(reg[i].p1, temp_point)) {
-                        insert_region(interest_point, reg[i].p1, rank, idx_search);
+                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1);
                         temp_point = reg[i].p2;
                     }
                     else {
-                        insert_region(interest_point, reg[i].p2, rank, idx_search);
+                        insert_region(interest_point, reg[i].p2, rank, idx_search, i+1);
                         temp_point = reg[i].p1;
                     }
                 }
