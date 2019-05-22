@@ -26,5 +26,7 @@ segment segment_get_id(int interest_point, int id);
 int segment_size_available(int interest_point);
 int segment_available_sisa_koneksi(int interest_point, int sisa_koneksi);
 int segment_size(int interest_point);
+vector<segment> segment_get_all(int interest_point);
+void segment_update_sisa_koneksi(int interest_point, int id, int sisa_koneksi);
 
 #endif

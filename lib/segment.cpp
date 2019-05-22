@@ -36,14 +36,6 @@ void segment_generate(int interest_point, int size_perpendicular_bisector) {
                 else {
                     temp[j].from = 2;
                 }
-                // double diffx = temp[j].p1.x - temp[j].p2.x;
-                // double diffy = temp[j].p1.y - temp[j].p2.y;
-                // if (diffx<0)
-                //     diffx = diffx * (-1);
-                // if (diffy<0)
-                //     diffy = diffy * (-1);
-                // if (diffx>0.000009 || diffy>0.000009)
-                //     segment_insert(interest_point, temp[j]);
                 if (abs(temp[j].p1.x - temp[j].p2.x)>0.000009 || abs(temp[j].p1.y - temp[j].p2.y)>0.000009) {
                     segment_insert(interest_point, temp[j]);
                 }
@@ -166,8 +158,7 @@ vector<segment> segment_get_related(int interest_point, point search_point, int 
                 temp.from = res->getInt("sisa_koneksi");
                 temp.id = res->getInt("id");
                 segment_result.push_back(temp);
-                // segment_result.s[segment_result.size] = temp;
-                // segment_result.size++;
+
             }   
             delete prep;
             delete con;
@@ -345,4 +336,73 @@ int segment_size(int interest_point) {
             cout << ", SQLState: " << e.getSQLState() << " )" << endl;
         }
         return size_segment;
+}
+
+vector<segment> segment_get_all(int interest_point) {
+    vector<segment> segment_result; 
+        try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            sql::Statement *stat;
+            sql::ResultSet *res;
+            // sql::PreparedStatement *prep;
+
+            driver = get_driver_instance();
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
+            stat = con->createStatement();
+            res = stat->executeQuery("SELECT * FROM segment_" + to_string(interest_point));
+            // res = prep->executeQuery();
+            segment temp;
+            while (res->next()) {
+                temp.p1.x = res->getDouble("p1_x");
+                temp.p1.y = res->getDouble("p1_y");
+                temp.p2.x = res->getDouble("p2_x");
+                temp.p2.y = res->getDouble("p2_y");
+                temp.from = res->getInt("sisa_koneksi");
+                temp.id = res->getInt("id");
+                segment_result.push_back(temp);
+            }   
+            delete stat;
+            // delete prep;
+            delete con;
+            delete res;
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
+        return segment_result;
+}
+
+void segment_update_sisa_koneksi(int interest_point, int id, int sisa_koneksi) {
+    try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            sql::Statement *stat;
+            sql::PreparedStatement *prep;
+            // sql::ResultSet *result;
+
+            driver = get_driver_instance();
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
+
+            stat = con->createStatement();
+            prep = con->prepareStatement("UPDATE segment_" + to_string(interest_point) + " SET sisa_koneksi=? WHERE id=?");
+            prep->setInt(1, sisa_koneksi);
+            prep->setInt(2, id);
+            prep->execute();
+            delete con;
+            delete prep; 
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
 }

@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <iostream>
 #include <cmath>
+#include <fstream>
+#include <string>
 
 using namespace std;
 
@@ -338,7 +340,14 @@ vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi
 }
 
 int main() {
-    vector<segment> reg = find_region(5, 58, 2);
+    ifstream file_txt("interest_point.txt");
+    string temp;
+    if (file_txt.is_open()) {
+        while (getline(file_txt, temp)) {
+            cout << stoi(temp) + 5 << endl;
+        }
+    }
+    // vector<segment> reg = find_region(5, 58, 2);
     // cout << reg.size() << endl;
     // for (int i=1;i<=89;i++) {
     //     // list_segment reg = find_region(5, 44, 2);

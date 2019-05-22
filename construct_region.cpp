@@ -32,7 +32,7 @@ bool is_same_segment(segment a, segment b) {
     return ((a.p1.x==b.p1.x && a.p1.y==b.p1.y) || (a.p1.x==b.p2.x && a.p1.y==b.p2.y) || (a.p2.x==b.p1.x && a.p2.y==b.p1.y) || (a.p2.x==b.p2.x && a.p2.y==b.p2.y));
 }
 
-void insert_region(int interest_point, point p, int rank, int idx_search, int order_val) {
+void insert_region(int interest_point, point p, int rank, int idx_search, int order_val, int parallel_size) {
     try {
             sql::Driver *driver;
             sql::Connection *con;
@@ -44,7 +44,7 @@ void insert_region(int interest_point, point p, int rank, int idx_search, int or
             con->setSchema(db_name);
             string num_point_string = to_string(interest_point);
             stat = con->createStatement();
-            prep = con->prepareStatement("INSERT INTO region_" + to_string(interest_point) + "(x, y, order_val, label_region, parallel_rank) VALUES(?, ?, ?, ?, ?)");
+            prep = con->prepareStatement("INSERT INTO region_" + to_string(interest_point) +"_"+ to_string(parallel_size) + "(x, y, order_val, label_region, parallel_rank) VALUES(?, ?, ?, ?, ?)");
             prep->setDouble(1, p.x);
             prep->setDouble(2, p.y);
             prep->setInt(3, order_val);
@@ -64,7 +64,7 @@ void insert_region(int interest_point, point p, int rank, int idx_search, int or
         }
 }
 
-void insert_record(int interest_point, int id_segment, int id_parallel, int segment_size) {
+void insert_record(int interest_point, int id_segment, int id_parallel, int segment_size, int parallel_size) {
     try {
             sql::Driver *driver;
             sql::Connection *con;
@@ -77,7 +77,7 @@ void insert_record(int interest_point, int id_segment, int id_parallel, int segm
             con->setSchema(db_name);
             string num_point_string = to_string(interest_point);
             stat = con->createStatement();
-            prep = con->prepareStatement("INSERT INTO record_region_" + to_string(interest_point) + "(id_segment, id_parallel, segment_size, time_created) VALUES(?, ?, ?, NOW())");
+            prep = con->prepareStatement("INSERT INTO record_region_" + to_string(interest_point) +"_"+ to_string(parallel_size) + "(id_segment, id_parallel, segment_size, time_created) VALUES(?, ?, ?, NOW())");
             prep->setDouble(1, id_segment);
             prep->setDouble(2, id_parallel);
             prep->setInt(3, segment_size);
@@ -166,7 +166,8 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     
-    int interest_point = 5;
+    int interest_point;
+    cin >> interest_point;
     int idx_search = rank+1;
     int label_region = rank+1;
     int total_segment = segment_size(interest_point);
@@ -176,21 +177,21 @@ int main(int argc, char *argv[])
         segment s = segment_get_id(interest_point, idx_search);
         if (s.from==2) {
             vector<segment> reg = find_region(interest_point, s.id, 2);
-            insert_record(interest_point, s.id, rank, reg.size());
+            insert_record(interest_point, s.id, rank, reg.size(), size);
             if (reg.size()>0) {
                 point temp_point;
                 for (int i=0;i<reg.size();i++) {
                     segment_decrement_sisa_koneksi(interest_point, reg[i].id);
                     if (i==0) {
-                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1);
+                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1, size);
                         temp_point = reg[i].p2;
                     }
                     else if (is_same_point(reg[i].p1, temp_point)) {
-                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1);
+                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1, size);
                         temp_point = reg[i].p2;
                     }
                     else {
-                        insert_region(interest_point, reg[i].p2, rank, idx_search, i+1);
+                        insert_region(interest_point, reg[i].p2, rank, idx_search, i+1, size);
                         temp_point = reg[i].p1;
                     }
                 }
@@ -210,21 +211,21 @@ int main(int argc, char *argv[])
         segment s = segment_get_id(interest_point, idx_search);
         if (s.from==1) {
             vector<segment> reg = find_region(interest_point, s.id, 1);
-            insert_record(interest_point, s.id, rank, reg.size());
+            insert_record(interest_point, s.id, rank, reg.size(), size);
             if (reg.size()>0) {
                 point temp_point;
                 for (int i=0;i<reg.size();i++) {
                     segment_decrement_sisa_koneksi(interest_point, reg[i].id);
                     if (i==0) {
-                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1);
+                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1, size);
                         temp_point = reg[i].p2;
                     }
                     else if (is_same_point(reg[i].p1, temp_point)) {
-                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1);
+                        insert_region(interest_point, reg[i].p1, rank, idx_search, i+1, size);
                         temp_point = reg[i].p2;
                     }
                     else {
-                        insert_region(interest_point, reg[i].p2, rank, idx_search, i+1);
+                        insert_region(interest_point, reg[i].p2, rank, idx_search, i+1, size);
                         temp_point = reg[i].p1;
                     }
                 }
