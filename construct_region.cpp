@@ -95,6 +95,37 @@ void insert_record(int interest_point, int id_segment, int id_parallel, int segm
         }
 }
 
+void insert_time_result(int interest_point, int parallel_size, double total_time) {
+    try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            sql::Statement *stat;
+            sql::PreparedStatement *prep;
+            // sql::ResultSet *result;
+
+            driver = get_driver_instance();
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
+            string num_point_string = to_string(interest_point);
+            stat = con->createStatement();
+            prep = con->prepareStatement("INSERT INTO result_region(total_generate_point, total_parallel, time) VALUES(?, ?, ?)");
+            prep->setInt(1, interest_point);
+            prep->setInt(2, parallel_size);
+            prep->setDouble(3, total_time);
+            prep->execute();
+            delete prep;
+            delete con;
+            delete stat;
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
+}
+
 vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi) {
     int count_ = 0;
     vector<segment> region;
@@ -162,12 +193,12 @@ vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
+    double start = MPI_Wtime();
+    MPI_Barrier(MPI_COMM_WORLD);
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    
-    int interest_point;
-    cin >> interest_point;
+    int interest_point = 5;
     int idx_search = rank+1;
     int label_region = rank+1;
     int total_segment = segment_size(interest_point);
@@ -238,6 +269,10 @@ int main(int argc, char *argv[])
             idx_search+=size;
         }
     }
-
+    MPI_Barrier(MPI_COMM_WORLD);
+    double finish = MPI_Wtime() - start;
+    if (rank==0) {
+        insert_time_result(interest_point, size, finish);
+    }
     MPI_Finalize();
 }
