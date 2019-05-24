@@ -15,7 +15,6 @@
 using namespace std;
 
 int convert_string_int(string s) {
-    // cout <<"s: "<< s << endl;
     int len = s.length() - 1, pengali = 1, result = 0;
     while (len>=0) {
         result+=(((int)s[len] - 48) * pengali);

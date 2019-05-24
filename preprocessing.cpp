@@ -13,13 +13,23 @@
 
 using namespace std;
 
+int convert_string_int(string s) {
+    int len = s.length() - 1, pengali = 1, result = 0;
+    while (len>=0) {
+        result+=(((int)s[len] - 48) * pengali);
+        pengali*=10;
+        len--;
+    }
+    return result;
+}
+
 int main() {
     ifstream file_txt("interest_point.txt");
     string temp;
     vector<int> interest_point;
     if (file_txt.is_open()) {
         while (getline(file_txt, temp)) {
-            int val = stoi(temp);
+            int val = convert_string_int(temp);
             interest_point.push_back(val);
         }
     }

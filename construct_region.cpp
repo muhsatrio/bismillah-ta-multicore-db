@@ -1,5 +1,5 @@
 #include <iostream>
-#include "mpich/mpi.h"
+#include "mpi.h"
 #include "lib/data.h"
 #include "lib/segment.h"
 #include <cmath>
