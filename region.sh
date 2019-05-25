@@ -1,3 +1,3 @@
 #!/bin/bash
 ./create.out
-mpiexec -n 5 ./a.out
+mpiexec -n 6 ./a.out

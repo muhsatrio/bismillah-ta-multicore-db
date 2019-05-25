@@ -28,10 +28,6 @@ bool is_segment_bound(segment s) {
     return (s.p1.x==0 && s.p2.x==0) || (s.p1.y==0 || s.p2.y==0) || (s.p1.x==bound && s.p2.x==bound) || (s.p1.y==bound || s.p2.y==bound);
 }
 
-bool is_same_segment(segment a, segment b) {
-    return ((a.p1.x==b.p1.x && a.p1.y==b.p1.y) || (a.p1.x==b.p2.x && a.p1.y==b.p2.y) || (a.p2.x==b.p1.x && a.p2.y==b.p1.y) || (a.p2.x==b.p2.x && a.p2.y==b.p2.y));
-}
-
 void insert_region(int interest_point, point p, int rank, int idx_search, int order_val, int parallel_size) {
     try {
             sql::Driver *driver;
@@ -168,21 +164,30 @@ vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi
             segment s = segment_get_id(interest_point, segment_related[idx_min].id);
             if (s.from>0) {
                 if (is_same_point(next_point, segment_related[idx_min].p1)) {
-                    next_point = segment_related[idx_min].p2;
-                    begin_point = segment_related[idx_min].p1;
+                    if (s.is_connected_p1_p2==false) {
+                        next_point = segment_related[idx_min].p2;
+                        begin_point = segment_related[idx_min].p1;
+                    }
+                    else {
+                        region.clear();
+                        found=false;
+                    }
                 }
                 else {
-                    next_point = segment_related[idx_min].p1;
-                    begin_point = segment_related[idx_min].p2;
+                    if (s.is_connected_p2_p1==false) {
+                        next_point = segment_related[idx_min].p1;
+                        begin_point = segment_related[idx_min].p2;
+                    }
+                    else {
+                        region.clear();
+                        found = false;
+                    }
                 }
-                region.push_back(segment_related[idx_min]);
-                idx_search = segment_related[idx_min].id;
+                if (found) {
+                    region.push_back(segment_related[idx_min]);
+                    idx_search = segment_related[idx_min].id;
+                }
             }
-            // else if (!(is_same_point(segment_related[idx_min].p1, start_point) || is_same_point(segment_related[idx_min].p2, start_point))) {
-            //     segment_increment_sisa_koneksi(interest_point, segment_related[idx_min].id);
-            //     region.clear();
-            //     found = false;
-            // }
             else {
                 region.clear();
                 found = false;
@@ -220,14 +225,17 @@ int main(int argc, char *argv[])
                     segment_decrement_sisa_koneksi(interest_point, reg[i].id);
                     if (i==0) {
                         insert_region(interest_point, reg[i].p1, rank, idx_search, i+1, size);
+                        segment_update_is_connected(interest_point, reg[i].id, 1);
                         temp_point = reg[i].p2;
                     }
                     else if (is_same_point(reg[i].p1, temp_point)) {
                         insert_region(interest_point, reg[i].p1, rank, idx_search, i+1, size);
+                        segment_update_is_connected(interest_point, reg[i].id, 1);
                         temp_point = reg[i].p2;
                     }
                     else {
                         insert_region(interest_point, reg[i].p2, rank, idx_search, i+1, size);
+                        segment_update_is_connected(interest_point, reg[i].id, 2);
                         temp_point = reg[i].p1;
                     }
                 }
@@ -254,14 +262,17 @@ int main(int argc, char *argv[])
                     segment_decrement_sisa_koneksi(interest_point, reg[i].id);
                     if (i==0) {
                         insert_region(interest_point, reg[i].p1, rank, idx_search, i+1, size);
+                        segment_update_is_connected(interest_point, reg[i].id, 1);
                         temp_point = reg[i].p2;
                     }
                     else if (is_same_point(reg[i].p1, temp_point)) {
                         insert_region(interest_point, reg[i].p1, rank, idx_search, i+1, size);
+                        segment_update_is_connected(interest_point, reg[i].id, 1);
                         temp_point = reg[i].p2;
                     }
                     else {
                         insert_region(interest_point, reg[i].p2, rank, idx_search, i+1, size);
+                        segment_update_is_connected(interest_point, reg[i].id, 2);
                         temp_point = reg[i].p1;
                     }
                 }

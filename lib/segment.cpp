@@ -12,7 +12,7 @@ void segment_init(int point) {
             con->setSchema(db_name);
 
             stat = con->createStatement();
-            stat->execute("CREATE table segment_" + to_string(point) + "(id INT NOT NULL AUTO_INCREMENT, p1_x DOUBLE, p1_y DOUBLE, p2_x DOUBLE, p2_y DOUBLE, sisa_koneksi INT, PRIMARY KEY(id))");
+            stat->execute("CREATE table segment_" + to_string(point) + "(id INT NOT NULL AUTO_INCREMENT, p1_x DOUBLE, p1_y DOUBLE, p2_x DOUBLE, p2_y DOUBLE, sisa_koneksi INT, is_connected_p1_p2 BOOLEAN DEFAULT 0, is_connected_p2_p1 BOOLEAN DEFAULT 0, PRIMARY KEY(id))");
             stat->execute("CREATE INDEX idx_segment_" + to_string(point) + " ON segment_" + to_string(point) + "(p1_x, p1_y, p2_x, p2_y, sisa_koneksi)");
             delete con;
             delete stat; 
@@ -157,8 +157,9 @@ vector<segment> segment_get_related(int interest_point, point search_point, int 
                 temp.p2.y = res->getDouble("p2_y");
                 temp.from = res->getInt("sisa_koneksi");
                 temp.id = res->getInt("id");
+                temp.is_connected_p1_p2 = res->getBoolean("is_connected_p1_p2");
+                temp.is_connected_p2_p1 = res->getBoolean("is_connected_p2_p1");
                 segment_result.push_back(temp);
-
             }   
             delete prep;
             delete con;
@@ -255,6 +256,8 @@ segment segment_get_id(int interest_point, int id) {
                 segment_result.p2.y = res->getDouble("p2_y");
                 segment_result.from = res->getInt("sisa_koneksi");
                 segment_result.id = res->getInt("id");
+                segment_result.is_connected_p1_p2 = res->getBoolean("is_connected_p1_p2");
+                segment_result.is_connected_p2_p1 = res->getBoolean("is_connected_p2_p1");
             }   
             delete prep;
             delete con;
@@ -390,6 +393,8 @@ vector<segment> segment_get_all(int interest_point) {
                 temp.p2.y = res->getDouble("p2_y");
                 temp.from = res->getInt("sisa_koneksi");
                 temp.id = res->getInt("id");
+                temp.is_connected_p1_p2 = res->getBoolean("is_connected_p1_p2");
+                temp.is_connected_p2_p1 = res->getBoolean("is_connected_p2_p1");
                 segment_result.push_back(temp);
             }   
             delete stat;
@@ -424,6 +429,49 @@ void segment_update_sisa_koneksi(int interest_point, int id, int sisa_koneksi) {
             prep->setInt(1, sisa_koneksi);
             prep->setInt(2, id);
             prep->execute();
+            delete con;
+            delete prep; 
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
+}
+
+void segment_update_is_connected(int interest_point, int id, int arah) {
+    try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            sql::Statement *stat;
+            sql::PreparedStatement *prep;
+            // sql::ResultSet *result;
+
+            driver = get_driver_instance();
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
+
+            stat = con->createStatement();
+            if (arah==0) {
+                prep = con->prepareStatement("UPDATE segment_" + to_string(interest_point) + " SET is_connected_p1_p2=FALSE WHERE id=?");
+                prep->setInt(1, id);
+                prep->execute();
+                prep = con->prepareStatement("UPDATE segment_" + to_string(interest_point) + " SET is_connected_p2_p1=FALSE WHERE id=?");
+                prep->setInt(1, id);
+                prep->execute();
+            }
+            else {
+                if (arah==1) {
+                    prep = con->prepareStatement("UPDATE segment_" + to_string(interest_point) + " SET is_connected_p1_p2=TRUE WHERE id=?");
+                }
+                else {
+                    prep = con->prepareStatement("UPDATE segment_" + to_string(interest_point) + " SET is_connected_p2_p1=TRUE WHERE id=?");
+                }
+                prep->setInt(1, id);
+                prep->execute();
+            }
             delete con;
             delete prep; 
         }
