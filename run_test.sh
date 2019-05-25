@@ -1,3 +1,3 @@
 #!/bin/bash
-mpic++ test.cpp
-mpiexec -n 5 ./a.out
+g++ test.cpp lib/segment.cpp -l mysqlcppconn
+./a.out

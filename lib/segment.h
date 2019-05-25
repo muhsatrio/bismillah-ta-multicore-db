@@ -22,6 +22,7 @@ void segment_insert(int interest_points, segment segment_obj);
 vector<segment> segment_create(int interest_point, int id_perpendicular);
 vector<segment> segment_get_related(int interest_point, point search_point, int id);
 void segment_decrement_sisa_koneksi(int interest_point, int id);
+void segment_increment_sisa_koneksi(int interest_point, int id);
 segment segment_get_id(int interest_point, int id);
 int segment_size_available(int interest_point);
 int segment_available_sisa_koneksi(int interest_point, int sisa_koneksi);

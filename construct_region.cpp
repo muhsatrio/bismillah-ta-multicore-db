@@ -178,6 +178,11 @@ vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi
                 region.push_back(segment_related[idx_min]);
                 idx_search = segment_related[idx_min].id;
             }
+            // else if (!(is_same_point(segment_related[idx_min].p1, start_point) || is_same_point(segment_related[idx_min].p2, start_point))) {
+            //     segment_increment_sisa_koneksi(interest_point, segment_related[idx_min].id);
+            //     region.clear();
+            //     found = false;
+            // }
             else {
                 region.clear();
                 found = false;

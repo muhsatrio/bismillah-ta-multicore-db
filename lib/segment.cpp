@@ -203,6 +203,35 @@ void segment_decrement_sisa_koneksi(int interest_point, int id) {
         }
 }
 
+void segment_increment_sisa_koneksi(int interest_point, int id) {
+    try {
+            sql::Driver *driver;
+            sql::Connection *con;
+            sql::Statement *stat;
+            sql::PreparedStatement *prep;
+            // sql::ResultSet *result;
+
+            driver = get_driver_instance();
+            con = driver->connect(db_host, db_user, db_pass);
+            con->setSchema(db_name);
+            stat = con->createStatement();
+            prep = con->prepareStatement("UPDATE segment_" + to_string(interest_point) + " SET sisa_koneksi=sisa_koneksi+1 WHERE id=?");
+            prep->setDouble(1, id);
+            prep->execute();
+            delete prep;
+            delete con;
+            delete stat;
+            // delete 
+        }
+        catch(sql::SQLException &e) {
+            cout << "# ERR: SQLException in " << __FILE__;
+            cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+            cout << "# ERR: " << e.what();
+            cout << " (MySQL error code: " << e.getErrorCode();
+            cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+        }
+}
+
 segment segment_get_id(int interest_point, int id) {
     segment segment_result; 
         try {
