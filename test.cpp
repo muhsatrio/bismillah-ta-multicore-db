@@ -19,10 +19,6 @@ bool is_segment_bound(segment s) {
     return (s.p1.x==0 && s.p2.x==0) || (s.p1.y==0 || s.p2.y==0) || (s.p1.x==bound && s.p2.x==bound) || (s.p1.y==bound || s.p2.y==bound);
 }
 
-bool is_same_segment(segment a, segment b) {
-    return ((a.p1.x==b.p1.x && a.p1.y==b.p1.y) || (a.p1.x==b.p2.x && a.p1.y==b.p2.y) || (a.p2.x==b.p1.x && a.p2.y==b.p1.y) || (a.p2.x==b.p2.x && a.p2.y==b.p2.y));
-}
-
 void insert_region(int interest_point, point p, int rank, int idx_search, int order_val, int parallel_size) {
     try {
             sql::Driver *driver;
@@ -129,17 +125,24 @@ vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi
     region.push_back(temp_segment);
     int idx_min;
     bool found = true;
+    bool is_there_redudant_region = false;
     while (!is_same_point(start_point, next_point) && found) {
+        if (segment_available_sisa_koneksi(interest_point, -1)>0) {
+            is_there_redudant_region = true;
+        }
+        cout << "dari: " << next_point.x << ' ' << next_point.y << endl;
         idx_min = idx_search;
         int count = 0;
         double min_angle = 180, temp_angle;
         segment_related.clear();
         segment_related = segment_get_related(interest_point, next_point, idx_search);
-        cout << "dari: " << next_point.x << ' ' << next_point.y << endl;
         for (int i=0;i<segment_related.size();i++) {
-            cout << segment_related[i].p1.x << ' ' << segment_related[i].p1.y << ' ' << segment_related[i].p2.x << ' ' << segment_related[i].p2.y << endl;
-            cout <<"sisa: "<< segment_related[i].from << endl;
             double vector_x1, vector_y1, vector_x2, vector_y2;
+            cout << "===============\n";
+            cout << segment_related[i].p1.x << ' ' << segment_related[i].p1.y << ' ' << segment_related[i].p2.x << ' ' << segment_related[i].p2.y << endl;
+            cout << segment_related[i].from << endl;
+            cout << segment_related[i].is_connected_p1_p2 << ' ' << segment_related[i].is_connected_p2_p1 << endl;
+            cout << "===============\n";
             if (segment_related[i].id!=idx_search && (is_same_point(next_point, segment_related[i].p1) || is_same_point(next_point, segment_related[i].p2))) {
                 vector_x1 = begin_point.x - next_point.x;
                 vector_y1 = begin_point.y - next_point.y;
@@ -162,30 +165,64 @@ vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi
             segment s = segment_get_id(interest_point, segment_related[idx_min].id);
             if (s.from>0) {
                 if (is_same_point(next_point, segment_related[idx_min].p1)) {
-                    next_point = segment_related[idx_min].p2;
-                    begin_point = segment_related[idx_min].p1;
+                    if (s.is_connected_p1_p2==false) {
+                        next_point = segment_related[idx_min].p2;
+                        begin_point = segment_related[idx_min].p1;
+                    }
+                    else {
+                        region.clear();
+                        found=false;
+                    }
                 }
                 else {
-                    next_point = segment_related[idx_min].p1;
-                    begin_point = segment_related[idx_min].p2;
+                    if (s.is_connected_p2_p1==false) {
+                        next_point = segment_related[idx_min].p1;
+                        begin_point = segment_related[idx_min].p2;
+                    }
+                    else {
+                        region.clear();
+                        found = false;
+                    }
                 }
-                region.push_back(segment_related[idx_min]);
-                idx_search = segment_related[idx_min].id;
+                if (found) {
+                    region.push_back(segment_related[idx_min]);
+                    idx_search = segment_related[idx_min].id;
+                }
             }
             else {
-                // segment_increment_sisa_koneksi(interest_point, idx_min);
-                region.clear();
-                found = false;
+                if (is_there_redudant_region) {
+                    if (is_same_point(next_point, segment_related[idx_min].p1)) {
+                        // if (s.is_connected_p1_p2==false) {
+                            next_point = segment_related[idx_min].p2;
+                            begin_point = segment_related[idx_min].p1;
+                        // }
+                    }
+                    else {
+                        // if (s.is_connected_p2_p1==false) {
+                            next_point = segment_related[idx_min].p1;
+                            begin_point = segment_related[idx_min].p2;
+                        // }
+                    }
+                    cout << "hihi\n";
+                    region.push_back(segment_related[idx_min]);
+                    idx_search = segment_related[idx_min].id;
+                }
+                else {
+                    cout << "hehe\n";
+                    region.clear();
+                    found = false;
+                }
             }
         }
         else {
             region.clear();
         }
     }
+    cout << is_there_redudant_region << endl;
     return region;
 }
 
 int main() {
-    vector<segment> region = find_region(5, 71, 2);
+    vector<segment> region = find_region(5, 42, 2);
     cout << "size: " << region.size() << endl;
 }

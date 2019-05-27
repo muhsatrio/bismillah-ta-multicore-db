@@ -466,7 +466,7 @@ void segment_update_is_connected(int interest_point, int id, int arah) {
                 if (arah==1) {
                     prep = con->prepareStatement("UPDATE segment_" + to_string(interest_point) + " SET is_connected_p1_p2=TRUE WHERE id=?");
                 }
-                else {
+                else if (arah==2) {
                     prep = con->prepareStatement("UPDATE segment_" + to_string(interest_point) + " SET is_connected_p2_p1=TRUE WHERE id=?");
                 }
                 prep->setInt(1, id);

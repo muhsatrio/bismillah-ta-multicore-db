@@ -122,19 +122,30 @@ void insert_time_result(int interest_point, int parallel_size, double total_time
         }
 }
 
-vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi) {
+vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi, bool is_reverse) {
     int count_ = 0;
     vector<segment> region;
     vector<segment> segment_related;
     segment temp_segment;
     temp_segment = segment_get_id(interest_point, idx_search);
+    if (is_reverse) {
+        point temp;
+        temp = temp_segment.p1;
+        temp_segment.p1 = temp_segment.p1;
+        temp_segment.p2 = temp; 
+    }
     point start_point = temp_segment.p1;
     point begin_point = temp_segment.p1;
     point next_point = temp_segment.p2;
     region.push_back(temp_segment);
     int idx_min;
     bool found = true;
+    bool is_there_redudant_region = false;
     while (!is_same_point(start_point, next_point) && found) {
+        if (segment_available_sisa_koneksi(interest_point, -1)>0) {
+            is_there_redudant_region = true;
+        }
+        // cout << "dari: " << next_point.x << ' ' << next_point.y << endl;
         idx_min = idx_search;
         int count = 0;
         double min_angle = 180, temp_angle;
@@ -189,8 +200,31 @@ vector<segment> find_region(int interest_point, int idx_search, int sisa_koneksi
                 }
             }
             else {
-                region.clear();
-                found = false;
+                if (is_there_redudant_region) {
+                    // if (is_segment_bound(temp_segment)) {
+                    //     found=false;
+                    // }
+                    // else {
+                        if (is_same_point(next_point, segment_related[idx_min].p1)) {
+                            // if (s.is_connected_p1_p2==false) {
+                                next_point = segment_related[idx_min].p2;
+                                begin_point = segment_related[idx_min].p1;
+                            // }
+                        }
+                        else {
+                            // if (s.is_connected_p2_p1==false) {
+                                next_point = segment_related[idx_min].p1;
+                                begin_point = segment_related[idx_min].p2;
+                            // }
+                        }
+                        region.push_back(segment_related[idx_min]);
+                        idx_search = segment_related[idx_min].id;
+                    // }
+                }
+                else {
+                    region.clear();
+                    found = false;
+                }
             }
         }
         else {
@@ -217,7 +251,7 @@ int main(int argc, char *argv[])
     while (segment_available_sisa_koneksi(interest_point,2)>0) {
         segment s = segment_get_id(interest_point, idx_search);
         if (s.from==2) {
-            vector<segment> reg = find_region(interest_point, s.id, 2);
+            vector<segment> reg = find_region(interest_point, s.id, 2, false);
             insert_record(interest_point, s.id, rank, reg.size(), size);
             if (reg.size()>0) {
                 point temp_point;
@@ -254,7 +288,7 @@ int main(int argc, char *argv[])
     while (segment_available_sisa_koneksi(interest_point,1)>0) {
         segment s = segment_get_id(interest_point, idx_search);
         if (s.from==1) {
-            vector<segment> reg = find_region(interest_point, s.id, 1);
+            vector<segment> reg = find_region(interest_point, s.id, 1, false);
             insert_record(interest_point, s.id, rank, reg.size(), size);
             if (reg.size()>0) {
                 point temp_point;
@@ -274,6 +308,30 @@ int main(int argc, char *argv[])
                         insert_region(interest_point, reg[i].p2, rank, idx_search, i+1, size);
                         segment_update_is_connected(interest_point, reg[i].id, 2);
                         temp_point = reg[i].p1;
+                    }
+                }
+            }
+            else {
+                if (segment_available_sisa_koneksi(interest_point, -1)>0 && is_segment_bound(s)) {
+                    vector<segment> reg_back = find_region(interest_point, idx_search, 1, true);
+                    point temp_point;
+                    for (int i=0;i<reg_back.size();i++) {
+                        segment_decrement_sisa_koneksi(interest_point, reg_back[i].id);
+                        if (i==0) {
+                            insert_region(interest_point, reg_back[i].p1, rank, idx_search, i+1, size);
+                            segment_update_is_connected(interest_point, reg_back[i].id, 1);
+                            temp_point = reg_back[i].p2;
+                        }
+                        else if (is_same_point(reg_back[i].p1, temp_point)) {
+                            insert_region(interest_point, reg_back[i].p1, rank, idx_search, i+1, size);
+                            segment_update_is_connected(interest_point, reg_back[i].id, 1);
+                            temp_point = reg_back[i].p2;
+                        }
+                        else {
+                            insert_region(interest_point, reg_back[i].p2, rank, idx_search, i+1, size);
+                            segment_update_is_connected(interest_point, reg_back[i].id, 2);
+                            temp_point = reg_back[i].p1;
+                        }
                     }
                 }
             }
