@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    int interest_point = 5;
+    int interest_point = 10;
     int idx_search = rank+1;
     int label_region = rank+1;
     int total_segment = segment_size(interest_point);

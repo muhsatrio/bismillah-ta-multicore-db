@@ -5,7 +5,7 @@
 using namespace std;
 
 int main() {
-    int interest_point = 5;
+    int interest_point = 10;
     vector<segment> list_segment = segment_get_all(interest_point);
     for (int i=0;i<list_segment.size();i++) {
         if ((list_segment[i].p1.x==0 && list_segment[i].p2.x==0) || (list_segment[i].p1.y==0 && list_segment[i].p2.y==0) || (list_segment[i].p1.x==bound && list_segment[i].p2.x==bound) || (list_segment[i].p1.y==bound && list_segment[i].p2.y==bound)) {
